@@ -50,11 +50,7 @@ var IMPORTED = [
 {id:35,data:"2026-01-09",cliente:"DP DENT S.R.L.",sede:"Pavia",nc:"NO",tipo:"",lavoro:"RELAZIONE LASER + NOMINA ADDETTO SICUREZZA LASER",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
 {id:36,data:"",cliente:"dentapro legionella da inserire",sede:"ARIA SERIATE, san rocco al porto, ecc..",nc:"",tipo:"",lavoro:"",resp:"",dc:"",fatt:"",note:"NICOLE MANDATO MAIL A BOSS MASSIMO CON CAMPIONAMENTI 2025 DENTALPRO - SOLO SAN ROCCO AL PORTO",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
 {id:37,data:"2026-01-15",cliente:"longevity spa",sede:"firenze e roma",nc:"NO",tipo:"",lavoro:"due corsi primo soccorso",resp:"NICOLE",dc:"2025-01-15",fatt:"X",note:"nicole firmato controo 180euro+iva a corso dati a sapra. Longevity prezzo ad hoc per corsi ps fatti fuori ufficio aqs.guardare contratto",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:38,data:"2026-01-21",cliente:"rho uno srl",sede:"rho",nc:"NO",tipo:"",lavoro:"pacchetto 12 corso radioprotezione operatori",resp:"NICOLE",dc:"2026-01-21",fatt:"X",note:"pacchetto agevolato di 12 corsi di Radioprotezione – Sicurezza per operatori, alle seguenti condizioni:
-
-Costo del pacchetto: 25 € + IVA per ciascun corso
-
-Totale: 300 € + IVA",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
+{id:38,data:"2026-01-21",cliente:"rho uno srl",sede:"rho",nc:"NO",tipo:"",lavoro:"pacchetto 12 corso radioprotezione operatori",resp:"NICOLE",dc:"2026-01-21",fatt:"X",note:"pacchetto agevolato di 12 corsi di Radioprotezione - Sicurezza per operatori. Costo: 25 EUR + IVA per corso. Totale: 300 EUR + IVA",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
 {id:39,data:"2025-01-27",cliente:"studio rtd",sede:"MILANO",nc:"NO",tipo:"",lavoro:"dvr nuov per cambio sede - in regus",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
 {id:40,data:"2026-01-27",cliente:"ALTAMEDICA-PHARMARTE SRL",sede:"MILANO",nc:"NO",tipo:"",lavoro:"SUPPORTO RELAZIONE SANITARIA E INVIO ATS ELENCO PERSONALE AGGIORNATO",resp:"",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
 {id:41,data:"2026-01-28",cliente:"LONGEVITY VIA BORDONI MILANO",sede:"MILANO PORTA NUOVA",nc:"NO",tipo:"",lavoro:"VARIAZIONE DS",resp:"CINZIA",dc:"2026-01-28",fatt:"X",note:"",dfa:"",df:"2026-01-28",cBy:"admin",uBy:"",uAt:""},
