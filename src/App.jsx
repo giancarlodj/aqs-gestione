@@ -148,15 +148,16 @@ function getStato(r) {
 
 function getAlert(r) {
   if (!r.data || r.df) return "";
-  if (r.fatt === "X" && r.dc) return "PRONTO FATTURARE";
-  if (r.nc === "SI" && !r.dfa) return "FATTURARE ANTICIPO";
+  if (r.fatt === "X" && r.dc) return "FATT. SALDO";
+  if (r.nc === "SI" && !r.dfa) return "FATT. ANTICIPO";
   return "";
 }
 
 function getProg(r) {
   if (!r.data) return { n: 0, colors: [] };
   if (r.df) return { n: 4, colors: ["#2E7D32","#2E7D32","#2E7D32","#2E7D32"], label: "Fatturato" };
-  if (r.fatt === "X" && r.dc) return { n: 3, colors: ["#EF6C00","#EF6C00","#EF6C00"], label: "Completo e fatturabile" };
+  if (r.nc === "SI" && r.dc && r.dfa) return { n: 3, colors: ["#EF6C00","#EF6C00","#EF6C00"], label: "Completo - pronto saldo" };
+  if (r.nc !== "SI" && r.dc) return { n: 3, colors: ["#EF6C00","#EF6C00","#EF6C00"], label: "Completo - pronto saldo" };
   if (r.nc === "SI" && r.dfa) return { n: 2, colors: ["#C62828","#F57C00"], label: "Anticipo fatturato" };
   if (r.nc === "SI") return { n: 2, colors: ["#C62828","#C62828"], label: "Anticipo da fare" };
   return { n: 1, colors: ["#C62828"], label: "Inserito" };
@@ -395,8 +396,8 @@ function LegendaModal({ onClose }) {
 }
 
 function CheckboxVisto({ checked, date, disabled, onToggle, color }) {
-  var bg = disabled ? "#F3F4F6" : checked ? "#C8E6C9" : (color === "red" ? "#FFCDD2" : "#FFF8E1");
-  var border = disabled ? "#D1D5DB" : checked ? "#2E7D32" : (color === "red" ? "#C62828" : "#E65100");
+  var bg = disabled ? "#F3F4F6" : checked ? "#C8E6C9" : (color === "red" ? "#FFCDD2" : color === "blue" ? "#E3F2FD" : "#FFF8E1");
+  var border = disabled ? "#D1D5DB" : checked ? "#2E7D32" : (color === "red" ? "#C62828" : color === "blue" ? "#1565C0" : "#E65100");
   return (
     <div style={{display:"flex",alignItems:"center",gap:4}}>
       <div onClick={disabled ? undefined : onToggle} style={{
@@ -496,16 +497,22 @@ export default function App() {
     setConfirmDel(null);
   }
   function toggleAnticipo(r){
-    if(r.dfa){return;}
-    var updated=Object.assign({},r,{dfa:todayStr(),uBy:user.nome,uAt:timeNow()});
+    var newVal=r.dfa?"":todayStr();
+    var updated=Object.assign({},r,{dfa:newVal,uBy:user.nome,uAt:timeNow()});
     saveRows(rows.map(function(x){return x.id===r.id?updated:x;}));
-    addLog(user.nome,"VISTO ANTICIPO",r.cliente);
+    addLog(user.nome,newVal?"VISTO ANTICIPO":"RIMOSSO ANTICIPO",r.cliente);
   }
   function toggleSaldo(r){
-    if(r.df){return;}
-    var updated=Object.assign({},r,{df:todayStr(),uBy:user.nome,uAt:timeNow()});
+    var newVal=r.df?"":todayStr();
+    var updated=Object.assign({},r,{df:newVal,uBy:user.nome,uAt:timeNow()});
     saveRows(rows.map(function(x){return x.id===r.id?updated:x;}));
-    addLog(user.nome,"VISTO SALDO",r.cliente);
+    addLog(user.nome,newVal?"VISTO SALDO":"RIMOSSO SALDO",r.cliente);
+  }
+  function toggleCompleto(r){
+    var newVal=r.dc?"":todayStr();
+    var updated=Object.assign({},r,{dc:newVal,uBy:user.nome,uAt:timeNow()});
+    saveRows(rows.map(function(x){return x.id===r.id?updated:x;}));
+    addLog(user.nome,newVal?"COMPLETATO":"RIMOSSO COMPLETAMENTO",r.cliente);
   }
   function sendEmail(row){var stato=getStato(row);var subj=encodeURIComponent("[FATT] "+stato+" - "+row.cliente);var body="Cliente: "+row.cliente+"\nSede: "+row.sede+"\nLavoro: "+row.lavoro+"\nResp: "+row.resp+"\nStato: "+stato+(row.note?"\nNote: "+row.note:"")+"\n\nCordiali saluti";window.open("mailto:amministrazione@aqsitalia.it?subject="+subj+"&body="+encodeURIComponent(body));}
   function exportCSV(){var h=["Data","Cliente","Sede","Contratto","Tipologia","Lavoro","Resp","Completamento","Fatturabile","Note","Anticipo","Fattura","Stato","Creato","Modificato"];var csv=[h.join(";")];filtered.forEach(function(r){csv.push([fDate(r.data),r.cliente,r.sede,r.nc,r.tipo||"",(r.lavoro||"").replace(/;/g,","),r.resp,fDate(r.dc),r.fatt,(r.note||"").replace(/;/g,","),fDate(r.dfa),fDate(r.df),getStato(r),r.cBy||"",r.uBy||""].join(";"));});var blob=new Blob(["\ufeff"+csv.join("\n")],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="commesse_aqs.csv";a.click();}
@@ -618,24 +625,24 @@ export default function App() {
       </div>
       <div style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
         <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:isAdmin?1500:1200}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:isAdmin?1620:1320}}>
           <colgroup>
             <col style={{width:"72px"}}/>
             <col style={{width:"170px"}}/>
-            <col style={{width:"90px"}}/>
-            <col style={{width:"38px"}}/>
-            <col style={{width:"110px"}}/>
-            <col style={{width:"160px"}}/>
-            <col style={{width:"58px"}}/>
-            <col style={{width:"72px"}}/>
+            <col style={{width:"85px"}}/>
             <col style={{width:"38px"}}/>
             <col style={{width:"100px"}}/>
-            {isAdmin&&<col style={{width:"70px"}}/>}
-            {isAdmin&&<col style={{width:"70px"}}/>}
-            <col style={{width:"80px"}}/>
-            <col style={{width:"60px"}}/>
-            <col style={{width:"80px"}}/>
-            <col style={{width:"70px"}}/>
+            <col style={{width:"150px"}}/>
+            <col style={{width:"58px"}}/>
+            <col style={{width:"38px"}}/>
+            <col style={{width:"55px"}}/>
+            <col style={{width:"95px"}}/>
+            {isAdmin&&<col style={{width:"72px"}}/>}
+            {isAdmin&&<col style={{width:"72px"}}/>}
+            <col style={{width:"90px"}}/>
+            <col style={{width:"68px"}}/>
+            <col style={{width:"82px"}}/>
+            <col style={{width:"78px"}}/>
             <col style={{width:"90px"}}/>
           </colgroup>
           <thead><tr style={{background:"#1F4E79"}}>
@@ -647,8 +654,8 @@ export default function App() {
               {k:"tipo",l:"Tipologia"},
               {k:"lavoro",l:"Lavoro"},
               {k:"resp",l:"Resp."},
-              {k:"dc",l:"Compl."},
               {k:"fatt",l:"Fatt."},
+              {k:"compl",l:"Compl."},
               {k:"note",l:"Note"},
             ].concat(isAdmin?[{k:"dfa",l:"V.Anticipo"},{k:"dfs",l:"V.Saldo"}]:[]).concat([
               {k:"stato",l:"Stato"},
@@ -663,7 +670,7 @@ export default function App() {
           </tr></thead>
           <tbody>{filtered.map(function(r,i){var stato=getStato(r);var alrt=getAlert(r);var prog=getProg(r);
             var anticDisabled = r.nc !== "SI";
-            var saldoDisabled = r.fatt !== "X";
+            var saldoDisabled = r.nc === "SI" ? !(r.dc && r.dfa) : !r.dc;
             return <tr key={r.id} style={{background:i%2===0?"white":"#EDF4FC",borderBottom:"1px solid #E5E7EB"}}>
               <td style={{padding:"8px 6px",whiteSpace:"nowrap",fontSize:10}}>{fDate(r.data)}</td>
               <td style={{padding:"8px 6px",fontWeight:600,color:"#1F4E79",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.cliente}>{r.cliente}</td>
@@ -672,8 +679,8 @@ export default function App() {
               <td style={{padding:"8px 6px",fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:"#6B7280"}} title={r.tipo}>{r.tipo||""}</td>
               <td style={{padding:"8px 6px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:10}} title={r.lavoro}>{r.lavoro}</td>
               <td style={{padding:"8px 6px",fontWeight:600,color:"#2E75B6",fontSize:10}}>{r.resp}</td>
-              <td style={{padding:"8px 6px",whiteSpace:"nowrap",fontSize:10}}>{fDate(r.dc)}</td>
               <td style={{padding:"8px 6px",textAlign:"center",fontWeight:700,color:r.fatt==="X"?"#2E7D32":"#D1D5DB"}}>{r.fatt==="X"?"X":"-"}</td>
+              <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dc} date={r.dc} disabled={false} onToggle={function(){toggleCompleto(r);}} color="blue"/></td>
               <td style={{padding:"8px 6px",fontSize:9,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.note}>{r.note}</td>
               {isAdmin&&<td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled} onToggle={function(){toggleAnticipo(r);}} color="red"/></td>}
               {isAdmin&&<td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.df} date={r.df} disabled={saldoDisabled} onToggle={function(){toggleSaldo(r);}} color="orange"/></td>}
