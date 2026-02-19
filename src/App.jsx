@@ -148,17 +148,16 @@ function getStato(r) {
 
 function getAlert(r) {
   if (!r.data || r.df) return "";
-  if (r.fatt === "X" && r.dc) return "FATT. SALDO";
-  if (r.nc === "SI" && !r.dfa) return "FATT. ANTICIPO";
+  if (r.dc && !r.df) return "SALDO";
+  if (r.nc === "SI" && !r.dfa) return "ANTICIPO";
   return "";
 }
 
 function getProg(r) {
   if (!r.data) return { n: 0, colors: [] };
   if (r.df) return { n: 4, colors: ["#2E7D32","#2E7D32","#2E7D32","#2E7D32"], label: "Fatturato" };
-  if (r.nc === "SI" && r.dc && r.dfa) return { n: 3, colors: ["#EF6C00","#EF6C00","#EF6C00"], label: "Completo - pronto saldo" };
-  if (r.nc !== "SI" && r.dc) return { n: 3, colors: ["#EF6C00","#EF6C00","#EF6C00"], label: "Completo - pronto saldo" };
-  if (r.nc === "SI" && r.dfa) return { n: 2, colors: ["#C62828","#F57C00"], label: "Anticipo fatturato" };
+  if (r.dc) return { n: 3, colors: ["#EF6C00","#EF6C00","#EF6C00"], label: "Completo - pronto saldo" };
+  if (r.nc === "SI" && r.dfa) return { n: 2, colors: ["#EF6C00","#EF6C00"], label: "Anticipo fatturato" };
   if (r.nc === "SI") return { n: 2, colors: ["#C62828","#C62828"], label: "Anticipo da fare" };
   return { n: 1, colors: ["#C62828"], label: "Inserito" };
 }
@@ -625,25 +624,25 @@ export default function App() {
       </div>
       <div style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
         <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:isAdmin?1620:1320}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:isAdmin?1650:1350}}>
           <colgroup>
             <col style={{width:"72px"}}/>
-            <col style={{width:"170px"}}/>
-            <col style={{width:"85px"}}/>
-            <col style={{width:"38px"}}/>
-            <col style={{width:"100px"}}/>
-            <col style={{width:"150px"}}/>
-            <col style={{width:"58px"}}/>
-            <col style={{width:"38px"}}/>
-            <col style={{width:"55px"}}/>
+            <col style={{width:"160px"}}/>
+            <col style={{width:"80px"}}/>
+            <col style={{width:"34px"}}/>
             <col style={{width:"95px"}}/>
-            {isAdmin&&<col style={{width:"72px"}}/>}
-            {isAdmin&&<col style={{width:"72px"}}/>}
+            <col style={{width:"145px"}}/>
+            <col style={{width:"56px"}}/>
+            <col style={{width:"34px"}}/>
+            <col style={{width:"52px"}}/>
             <col style={{width:"90px"}}/>
-            <col style={{width:"68px"}}/>
-            <col style={{width:"82px"}}/>
-            <col style={{width:"78px"}}/>
-            <col style={{width:"90px"}}/>
+            {isAdmin&&<col style={{width:"70px"}}/>}
+            {isAdmin&&<col style={{width:"70px"}}/>}
+            <col style={{width:"88px"}}/>
+            <col style={{width:"66px"}}/>
+            <col style={{width:"72px"}}/>
+            <col style={{width:"80px"}}/>
+            <col style={{width:"88px"}}/>
           </colgroup>
           <thead><tr style={{background:"#1F4E79"}}>
             {[
@@ -669,8 +668,8 @@ export default function App() {
             })}
           </tr></thead>
           <tbody>{filtered.map(function(r,i){var stato=getStato(r);var alrt=getAlert(r);var prog=getProg(r);
-            var anticDisabled = r.nc !== "SI";
-            var saldoDisabled = r.nc === "SI" ? !(r.dc && r.dfa) : !r.dc;
+            var anticDisabled = r.nc !== "SI" || !!r.df;
+            var saldoDisabled = !r.dc;
             return <tr key={r.id} style={{background:i%2===0?"white":"#EDF4FC",borderBottom:"1px solid #E5E7EB"}}>
               <td style={{padding:"8px 6px",whiteSpace:"nowrap",fontSize:10}}>{fDate(r.data)}</td>
               <td style={{padding:"8px 6px",fontWeight:600,color:"#1F4E79",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.cliente}>{r.cliente}</td>
