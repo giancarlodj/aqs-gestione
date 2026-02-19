@@ -364,7 +364,6 @@ function AdminSettings({ users, onSaveUsers, logs, onClose }) {
         <p>Log completo modifiche per utente</p>
         <p>Esportazione CSV e invio email</p>
         <p>Gestione utenti (solo admin)</p>
-        <p style={{marginTop:12,fontWeight:700}}>Prossimo: Scadenzario Clienti</p>
       </div>}
     </Modal>
   );
@@ -413,7 +412,6 @@ function CheckboxVisto({ checked, date, disabled, onToggle, color }) {
 
 export default function App() {
   var [user, setUser] = useState(null);
-  var [section, setSection] = useState(null);
   var [rows, setRows] = useState(IMPORTED);
   var [users, setUsers] = useState(DEFAULT_USERS);
   var [logs, setLogs] = useState([]);
@@ -518,30 +516,6 @@ export default function App() {
 
   if(!user) return <LoginPage users={users} onLogin={function(u){setUser(u);addLog(u.nome,"LOGIN","Accesso");}}/>;
 
-  if(!section) return (
-    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#0A1628,#1F4E79,#2E75B6)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif"}}>
-      <div style={{textAlign:"center"}}>
-        <div style={{fontSize:14,color:"rgba(255,255,255,0.5)",marginBottom:8}}>Benvenuto, {user.nome}</div>
-        <h1 style={{color:"white",fontSize:28,fontWeight:800,margin:"0 0 40px"}}>Seleziona Servizio</h1>
-        <div style={{display:"flex",gap:24,justifyContent:"center",flexWrap:"wrap"}}>
-          <div onClick={function(){setSection("fatt");}} style={{background:"white",borderRadius:20,padding:"40px 36px",width:260,cursor:"pointer",boxShadow:"0 10px 40px rgba(0,0,0,0.2)",transition:"transform 0.15s"}} onMouseEnter={function(e){e.currentTarget.style.transform="scale(1.03)";}} onMouseLeave={function(e){e.currentTarget.style.transform="scale(1)";}}>
-            <div style={{width:48,height:48,borderRadius:10,background:"#1F4E79",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>
-            <h2 style={{fontSize:18,fontWeight:800,color:"#1F4E79",margin:"0 0 8px"}}>Lavori da Fatturare</h2>
-            <p style={{fontSize:13,color:"#6B7280",margin:0}}>Gestione commesse e fatturazione</p>
-            {stats.df>0&&<div style={{marginTop:14,background:"#FFCDD2",color:"#C62828",padding:"6px 12px",borderRadius:8,fontSize:11,fontWeight:700}}>{stats.df} da fatturare</div>}
-          </div>
-          <div style={{background:"white",borderRadius:20,padding:"40px 36px",width:260,opacity:0.55,position:"relative"}}>
-            <div style={{position:"absolute",top:16,right:16,background:"#FFB74D",color:"white",padding:"3px 8px",borderRadius:4,fontSize:9,fontWeight:700}}>PROSSIMAMENTE</div>
-            <div style={{width:48,height:48,borderRadius:10,background:"#9CA3AF",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg></div>
-            <h2 style={{fontSize:18,fontWeight:800,color:"#1F4E79",margin:"0 0 8px"}}>Scadenzario Clienti</h2>
-            <p style={{fontSize:13,color:"#6B7280",margin:0}}>Scadenze e rinnovi contratti</p>
-          </div>
-        </div>
-        <button onClick={function(){setUser(null);setSection(null);}} style={{marginTop:36,padding:"8px 20px",background:"rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.7)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:8,fontSize:12,cursor:"pointer"}}>Cambia utente</button>
-      </div>
-    </div>
-  );
-
   var isAdmin = user.ruolo==="admin";
 
   var sortArrow = function(col){
@@ -563,8 +537,7 @@ export default function App() {
         {stats.alc>0&&<div onClick={function(){setView("lista");setFilter("ALERT");}} style={{background:"#C62828",color:"white",borderRadius:20,padding:"3px 10px",fontSize:10,fontWeight:700,cursor:"pointer",minWidth:20,textAlign:"center"}}>{stats.alc}</div>}
         {isAdmin&&<button onClick={function(){setShowSettings(true);}} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:8,padding:"6px 8px",cursor:"pointer",color:"white",display:"flex",alignItems:"center"}} title="Impostazioni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>}
         <div style={{color:"white",fontSize:11,padding:"5px 10px",background:"rgba(255,255,255,0.08)",borderRadius:6}}><b>{user.nome}</b></div>
-        <button onClick={function(){setSection(null);}} style={{padding:"6px 12px",background:"transparent",color:"rgba(255,255,255,0.6)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,fontSize:10,cursor:"pointer"}}>Servizi</button>
-        <button onClick={function(){addLog(user.nome,"LOGOUT","");setUser(null);setSection(null);}} style={{padding:"6px 12px",background:"transparent",color:"rgba(255,255,255,0.6)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,fontSize:10,cursor:"pointer"}}>Esci</button>
+        <button onClick={function(){addLog(user.nome,"LOGOUT","");setUser(null);}} style={{padding:"6px 12px",background:"transparent",color:"rgba(255,255,255,0.6)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,fontSize:10,cursor:"pointer"}}>Esci</button>
       </div>
     </div>
 
@@ -718,10 +691,16 @@ function LoginPage({ users, onLogin }) {
   function go(){var usr=users[u.toLowerCase().trim()];if(usr&&usr.password===p){onLogin(Object.assign({username:u.toLowerCase().trim()},usr));}else{setErr("Credenziali non valide");}}
   var inp = {padding:"12px 14px",border:"1.5px solid #D1D5DB",borderRadius:8,fontSize:14,outline:"none",width:"100%",boxSizing:"border-box"};
   return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0A1628,#1F4E79,#2E75B6)",fontFamily:"system-ui,sans-serif"}}>
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0A1628,#1F4E79,#2E75B6)",fontFamily:"system-ui,sans-serif"}}>
       <div style={{background:"white",borderRadius:18,padding:"44px 36px",width:370,boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
         <div style={{textAlign:"center",marginBottom:30}}>
-          <div style={{width:60,height:60,background:"linear-gradient(135deg,#1F4E79,#2E75B6)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",fontSize:18,color:"white",fontWeight:800,letterSpacing:1}}>AQS</div>
+          <div style={{width:64,height:64,background:"linear-gradient(135deg,#1F4E79,#2E75B6)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+          </div>
           <h1 style={{fontSize:22,fontWeight:800,color:"#1F4E79",margin:0}}>AQS Italia</h1>
           <p style={{color:"#9CA3AF",fontSize:13,marginTop:4}}>Gestione Commesse e Fatturazione</p>
         </div>
@@ -731,10 +710,8 @@ function LoginPage({ users, onLogin }) {
           {err&&<div style={{color:"#C62828",fontSize:12,textAlign:"center"}}>{err}</div>}
           <button onClick={go} style={{padding:"13px",background:"linear-gradient(135deg,#1F4E79,#2E75B6)",color:"white",border:"none",borderRadius:8,fontSize:15,fontWeight:700,cursor:"pointer",marginTop:4}}>Accedi</button>
         </div>
-        <div style={{marginTop:24,padding:"12px 14px",background:"#F8FAFC",borderRadius:8,fontSize:11,color:"#6B7280"}}>
-          <b style={{color:"#1F4E79"}}>Demo:</b> admin / admin2026
-        </div>
       </div>
+      <div style={{marginTop:28,textAlign:"center",color:"rgba(255,255,255,0.35)",fontSize:11}}>AQS Italia srl - 2026 tutti i diritti riservati</div>
     </div>
   );
 }
