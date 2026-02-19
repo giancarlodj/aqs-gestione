@@ -6,7 +6,7 @@ var TIPOLOGIE = ["Formazione extra contratto","Sicurezza odontoiatria","Sicurezz
 function getStato(r) {
   if (!r.data) return "";
   if (r.df) return "FATTURATO";
-  if (r.fatt === "X") return "DA FATTURARE";
+  if (r.dc) return "DA FATTURARE";
   return "IN ATTESA";
 }
 
@@ -140,7 +140,6 @@ function EditForm({ row, onSave, onClose, isAdmin, users }) {
         <div><label style={lbl}>Sede</label><input value={f.sede} onChange={function(e){set("sede",e.target.value);}} style={inp}/></div>
         <div><label style={lbl}>Tipologia Attivita</label><select value={f.tipo||""} onChange={function(e){set("tipo",e.target.value);}} style={inp}><option value="">-- Seleziona --</option>{TIPOLOGIE.map(function(t){return <option key={t} value={t}>{t}</option>;})}</select></div>
         <div><label style={lbl}>Responsabile</label><select value={f.resp} onChange={function(e){set("resp",e.target.value);}} style={inp}><option value="">--</option>{resps.map(function(r){return <option key={r}>{r}</option>;})}</select></div>
-        <div><label style={lbl}>Fatturabile?</label><select value={f.fatt} onChange={function(e){set("fatt",e.target.value);}} style={inp}><option value="">No</option><option value="X">Si (X)</option></select></div>
         <div style={{gridColumn:"1/-1"}}><label style={lbl}>Lavoro da svolgere</label><textarea value={f.lavoro} onChange={function(e){set("lavoro",e.target.value);}} rows={2} style={Object.assign({},inp,{resize:"vertical"})}/></div>
         <div><label style={lbl}>Data completamento</label><input type="date" value={f.dc} onChange={function(e){set("dc",e.target.value);}} style={inp}/></div>
         <div style={{gridColumn:"1/-1"}}><label style={lbl}>Note</label><textarea value={f.note} onChange={function(e){set("note",e.target.value);}} rows={2} style={Object.assign({},inp,{resize:"vertical"})}/></div>
@@ -488,7 +487,7 @@ export default function App() {
     Promise.all(promises).then(function(){ loadAll(); });
   }
   function sendEmail(row){var stato=getStato(row);var subj=encodeURIComponent("[FATT] "+stato+" - "+row.cliente);var body="Cliente: "+row.cliente+"\nSede: "+row.sede+"\nLavoro: "+row.lavoro+"\nResp: "+row.resp+"\nStato: "+stato+(row.note?"\nNote: "+row.note:"")+"\n\nCordiali saluti";window.open("mailto:amministrazione@aqsitalia.it?subject="+subj+"&body="+encodeURIComponent(body));}
-  function exportCSV(){var h=["Data","Cliente","Sede","Contratto","Tipologia","Lavoro","Resp","Completamento","Fatturabile","Note","Anticipo","Fattura","Stato","Creato","Modificato"];var csv=[h.join(";")];filtered.forEach(function(r){csv.push([fDate(r.data),r.cliente,r.sede,r.nc,r.tipo||"",(r.lavoro||"").replace(/;/g,","),r.resp,fDate(r.dc),r.fatt,(r.note||"").replace(/;/g,","),fDate(r.dfa),fDate(r.df),getStato(r),r.cBy||"",r.uBy||""].join(";"));});var blob=new Blob(["\ufeff"+csv.join("\n")],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="commesse_aqs.csv";a.click();}
+  function exportCSV(){var h=["Data","Cliente","Sede","Contratto","Tipologia","Lavoro","Resp","Completamento","Fatturabile","Note","Anticipo","Fattura","Stato","Creato","Modificato"];var csv=[h.join(";")];filtered.forEach(function(r){csv.push([fDate(r.data),r.cliente,r.sede,r.nc,r.tipo||"",(r.lavoro||"").replace(/;/g,","),r.resp,fDate(r.dc),r.dc?"SI":"NO",(r.note||"").replace(/;/g,","),fDate(r.dfa),fDate(r.df),getStato(r),r.cBy||"",r.uBy||""].join(";"));});var blob=new Blob(["\ufeff"+csv.join("\n")],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="commesse_aqs.csv";a.click();}
 
   if(loading) return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0A1628,#1F4E79,#2E75B6)",fontFamily:"system-ui,sans-serif"}}>
@@ -710,7 +709,7 @@ export default function App() {
               <td style={{padding:"8px 6px",fontSize:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:"#6B7280"}} title={r.tipo}>{r.tipo||""}</td>
               <td style={{padding:"8px 6px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:10}} title={r.lavoro}>{r.lavoro}</td>
               <td style={{padding:"8px 6px",fontWeight:600,color:"#2E75B6",fontSize:10}}>{r.resp}</td>
-              <td style={{padding:"8px 6px",textAlign:"center",fontWeight:700,color:r.fatt==="X"?"#2E7D32":"#D1D5DB"}}>{r.fatt==="X"?"X":"-"}</td>
+              <td style={{padding:"8px 6px",textAlign:"center"}}>{r.dc?<div style={{width:12,height:12,borderRadius:"50%",background:"#2E7D32",margin:"0 auto"}} title="Fatturabile"/>:<div style={{width:12,height:12,borderRadius:"50%",background:"#E5E7EB",margin:"0 auto"}} title="Non fatturabile"/>}</td>
               <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dc} date={r.dc} disabled={false} onToggle={function(){toggleCompleto(r);}} color="blue"/></td>
               <td style={{padding:"8px 6px",fontSize:9,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.note}>{r.note}</td>
               <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled||!isAdmin} onToggle={function(){toggleAnticipo(r);}} color="red"/></td>
