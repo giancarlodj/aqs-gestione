@@ -5,6 +5,7 @@ var TIPOLOGIE = ["Formazione extra contratto","Sicurezza odontoiatria","Sicurezz
 
 function getStato(r) {
   if (!r.data) return "";
+  if (r.nf) return "NO FATT.";
   if (r.df) return "FATTURATO";
   if (r.dc) return "DA FATTURARE";
   return "IN ATTESA";
@@ -19,6 +20,7 @@ function getAlert(r) {
 
 function getProg(r) {
   if (!r.data) return { n: 0, colors: [] };
+  if (r.nf) return { n: 4, colors: ["#9E9E9E","#9E9E9E","#9E9E9E","#9E9E9E"], label: "Non fatturabile" };
   if (r.df) return { n: 4, colors: ["#2E7D32","#2E7D32","#2E7D32","#2E7D32"], label: "Fatturato" };
   if (r.dc) return { n: 3, colors: ["#EF6C00","#EF6C00","#EF6C00"], label: "Completo - pronto saldo" };
   if (r.nc === "SI" && r.dfa) return { n: 2, colors: ["#EF6C00","#EF6C00"], label: "Anticipo fatturato" };
@@ -65,7 +67,7 @@ function Stars({ prog }) {
 
 function StatoTag({ s }) {
   if (!s) return null;
-  var m = {"FATTURATO":{bg:"#C8E6C9",c:"#2E7D32"},"DA FATTURARE":{bg:"#FFCDD2",c:"#C62828"},"IN ATTESA":{bg:"#FFE0B2",c:"#E65100"}};
+  var m = {"FATTURATO":{bg:"#C8E6C9",c:"#2E7D32"},"DA FATTURARE":{bg:"#FFCDD2",c:"#C62828"},"IN ATTESA":{bg:"#FFE0B2",c:"#E65100"},"NO FATT.":{bg:"#E0E0E0",c:"#616161"}};
   var st = m[s] || {bg:"#eee",c:"#666"};
   return <span style={{background:st.bg,color:st.c,padding:"4px 10px",borderRadius:6,fontSize:10,fontWeight:700,whiteSpace:"nowrap",display:"inline-block"}}>{s}</span>;
 }
@@ -256,19 +258,19 @@ function LegendaModal({ onClose }) {
   );
 }
 
-function CheckboxVisto({ checked, date, disabled, onToggle, color }) {
-  var bg = disabled ? "#F3F4F6" : checked ? "#C8E6C9" : (color === "red" ? "#FFCDD2" : color === "blue" ? "#E3F2FD" : "#FFF8E1");
-  var border = disabled ? "#D1D5DB" : checked ? "#2E7D32" : (color === "red" ? "#C62828" : color === "blue" ? "#1565C0" : "#E65100");
+function CheckboxVisto({ checked, date, disabled, onToggle, color, hideDate }) {
+  var bg = disabled ? "#F3F4F6" : checked ? (color==="gray"?"#E0E0E0":"#C8E6C9") : (color === "red" ? "#FFCDD2" : color === "blue" ? "#E3F2FD" : color === "gray" ? "#F5F5F5" : "#FFF8E1");
+  var border = disabled ? "#D1D5DB" : checked ? (color==="gray"?"#757575":"#2E7D32") : (color === "red" ? "#C62828" : color === "blue" ? "#1565C0" : color === "gray" ? "#9E9E9E" : "#E65100");
   return (
-    <div style={{display:"flex",alignItems:"center",gap:4}}>
+    <div style={{display:"flex",alignItems:"center",gap:3}}>
       <div onClick={disabled ? undefined : onToggle} style={{
         width:18,height:18,borderRadius:4,border:"2px solid "+border,background:bg,
         cursor:disabled?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",
         opacity:disabled?0.4:1
       }}>
-        {checked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="3"><path d="M5 13l4 4L19 7"/></svg>}
+        {checked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color==="gray"?"#757575":"#2E7D32"} strokeWidth="3"><path d="M5 13l4 4L19 7"/></svg>}
       </div>
-      {checked && date && <span style={{fontSize:8,color:"#6B7280",whiteSpace:"nowrap"}}>{fDate(date)}</span>}
+      {checked && date && !hideDate && <span style={{fontSize:8,color:"#6B7280",whiteSpace:"nowrap"}}>{fDate(date)}</span>}
     </div>
   );
 }
@@ -308,11 +310,11 @@ function sb(table) {
 }
 
 function dbToRow(r) {
-  return { id:r.id, data:r.data||"", cliente:r.cliente||"", sede:r.sede||"", nc:r.nc||"", tipo:r.tipo||"", lavoro:r.lavoro||"", resp:r.resp||"", dc:r.dc||"", fatt:r.fatt||"", note:r.note||"", dfa:r.dfa||"", df:r.df||"", cBy:r.cby||"", uBy:r.uby||"", uAt:r.uat||"" };
+  return { id:r.id, data:r.data||"", cliente:r.cliente||"", sede:r.sede||"", nc:r.nc||"", tipo:r.tipo||"", lavoro:r.lavoro||"", resp:r.resp||"", dc:r.dc||"", fatt:r.fatt||"", note:r.note||"", dfa:r.dfa||"", df:r.df||"", nf:r.nf||"", cBy:r.cby||"", uBy:r.uby||"", uAt:r.uat||"" };
 }
 
 function rowToDb(r) {
-  return { data:r.data||"", cliente:r.cliente||"", sede:r.sede||"", nc:r.nc||"", tipo:r.tipo||"", lavoro:r.lavoro||"", resp:r.resp||"", dc:r.dc||"", fatt:r.fatt||"", note:r.note||"", dfa:r.dfa||"", df:r.df||"", cby:r.cBy||"", uby:r.uBy||"", uat:r.uAt||"" };
+  return { data:r.data||"", cliente:r.cliente||"", sede:r.sede||"", nc:r.nc||"", tipo:r.tipo||"", lavoro:r.lavoro||"", resp:r.resp||"", dc:r.dc||"", fatt:r.fatt||"", note:r.note||"", dfa:r.dfa||"", df:r.df||"", nf:r.nf||"", cby:r.cBy||"", uby:r.uBy||"", uat:r.uAt||"" };
 }
 
 export default function App() {
@@ -470,6 +472,13 @@ export default function App() {
     sb("commesse").update(r.id, rowToDb(updated)).then(function(){ loadAll(); });
     setRows(rows.map(function(x){return x.id===r.id?updated:x;}));
     addLog(user.nome,newVal?"COMPLETATO":"RIMOSSO COMPLETAMENTO",r.cliente);
+  }
+  function toggleNoFatt(r){
+    var newVal=r.nf?"":"SI";
+    var updated=Object.assign({},r,{nf:newVal,uBy:user.nome,uAt:timeNow()});
+    sb("commesse").update(r.id, rowToDb(updated)).then(function(){ loadAll(); });
+    setRows(rows.map(function(x){return x.id===r.id?updated:x;}));
+    addLog(user.nome,newVal?"NO FATTURAZIONE":"RIMOSSO NO FATTURAZIONE",r.cliente);
   }
   function saveUsers(nu){
     setUsers(nu);
@@ -654,25 +663,26 @@ export default function App() {
       </div>
       <div style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
         <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:1650}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:1780}}>
           <colgroup>
-            <col style={{width:"72px"}}/>
-            <col style={{width:"160px"}}/>
+            <col style={{width:"68px"}}/>
+            <col style={{width:"180px"}}/>
             <col style={{width:"80px"}}/>
-            <col style={{width:"34px"}}/>
-            <col style={{width:"95px"}}/>
-            <col style={{width:"145px"}}/>
-            <col style={{width:"56px"}}/>
-            <col style={{width:"34px"}}/>
-            <col style={{width:"52px"}}/>
+            <col style={{width:"32px"}}/>
             <col style={{width:"90px"}}/>
+            <col style={{width:"190px"}}/>
+            <col style={{width:"56px"}}/>
+            <col style={{width:"32px"}}/>
+            <col style={{width:"44px"}}/>
+            <col style={{width:"140px"}}/>
+            <col style={{width:"62px"}}/>
+            <col style={{width:"62px"}}/>
+            <col style={{width:"54px"}}/>
+            <col style={{width:"82px"}}/>
+            <col style={{width:"62px"}}/>
+            <col style={{width:"68px"}}/>
             <col style={{width:"70px"}}/>
-            <col style={{width:"70px"}}/>
-            <col style={{width:"88px"}}/>
-            <col style={{width:"66px"}}/>
-            <col style={{width:"72px"}}/>
-            <col style={{width:"80px"}}/>
-            <col style={{width:"88px"}}/>
+            <col style={{width:"84px"}}/>
           </colgroup>
           <thead><tr style={{background:"#1F4E79"}}>
             {[
@@ -686,8 +696,9 @@ export default function App() {
               {k:"fatt",l:"Fatt."},
               {k:"compl",l:"Compl."},
               {k:"note",l:"Note"},
-              {k:"dfa",l:"V.Anticipo"},
+              {k:"dfa",l:"V.Antic."},
               {k:"dfs",l:"V.Saldo"},
+              {k:"nf",l:"No.Fatt"},
               {k:"stato",l:"Stato"},
               {k:"prog",l:"Progr."},
               {k:"alert",l:"Alert"},
@@ -699,8 +710,10 @@ export default function App() {
             })}
           </tr></thead>
           <tbody>{filtered.map(function(r,i){var stato=getStato(r);var alrt=getAlert(r);var prog=getProg(r);
-            var anticDisabled = r.nc !== "SI" || !!r.df;
-            var saldoDisabled = !r.dc;
+            var hasNf = !!r.nf;
+            var anticDisabled = r.nc !== "SI" || !!r.df || hasNf;
+            var saldoDisabled = !r.dc || hasNf;
+            var nfDisabled = !!r.df || !!r.dfa;
             return <tr key={r.id} style={{background:i%2===0?"white":"#EDF4FC",borderBottom:"1px solid #E5E7EB"}}>
               <td style={{padding:"8px 6px",whiteSpace:"nowrap",fontSize:10}}>{fDate(r.data)}</td>
               <td style={{padding:"8px 6px",fontWeight:600,color:"#1F4E79",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.cliente}>{r.cliente}</td>
@@ -710,10 +723,11 @@ export default function App() {
               <td style={{padding:"8px 6px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:10}} title={r.lavoro}>{r.lavoro}</td>
               <td style={{padding:"8px 6px",fontWeight:600,color:"#2E75B6",fontSize:10}}>{r.resp}</td>
               <td style={{padding:"8px 6px",textAlign:"center"}}>{r.dc?<div style={{width:12,height:12,borderRadius:"50%",background:"#2E7D32",margin:"0 auto"}} title="Fatturabile"/>:<div style={{width:12,height:12,borderRadius:"50%",background:"#E5E7EB",margin:"0 auto"}} title="Non fatturabile"/>}</td>
-              <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dc} date={r.dc} disabled={false} onToggle={function(){toggleCompleto(r);}} color="blue"/></td>
+              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.dc} disabled={false} onToggle={function(){toggleCompleto(r);}} color="blue" hideDate/></td>
               <td style={{padding:"8px 6px",fontSize:9,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.note}>{r.note}</td>
-              <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled||!isAdmin} onToggle={function(){toggleAnticipo(r);}} color="red"/></td>
-              <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.df} date={r.df} disabled={saldoDisabled||!isAdmin} onToggle={function(){toggleSaldo(r);}} color="orange"/></td>
+              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled||!isAdmin} onToggle={function(){toggleAnticipo(r);}} color="red" hideDate/></td>
+              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.df} date={r.df} disabled={saldoDisabled||!isAdmin} onToggle={function(){toggleSaldo(r);}} color="orange" hideDate/></td>
+              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={hasNf} disabled={nfDisabled||!isAdmin} onToggle={function(){toggleNoFatt(r);}} color="gray" hideDate/></td>
               <td style={{padding:"8px 6px"}}><StatoTag s={stato}/></td>
               <td style={{padding:"8px 6px"}}><Stars prog={prog}/></td>
               <td style={{padding:"8px 6px"}}><AlertTag a={alrt}/></td>
@@ -726,7 +740,7 @@ export default function App() {
                 </div>
               </td>
             </tr>;})}
-            {filtered.length===0&&<tr><td colSpan={17} style={{padding:30,textAlign:"center",color:"#9CA3AF"}}>Nessuna attivita trovata</td></tr>}
+            {filtered.length===0&&<tr><td colSpan={18} style={{padding:30,textAlign:"center",color:"#9CA3AF"}}>Nessuna attivita trovata</td></tr>}
           </tbody>
         </table></div>
         <div style={{padding:"8px 14px",borderTop:"1px solid #E5E7EB",color:"#9CA3AF",fontSize:11}}>{filtered.length} attivita - {user.nome}</div>
