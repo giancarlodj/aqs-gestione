@@ -587,14 +587,14 @@ export default function App() {
               {k:"fatt",l:"Fatt."},
               {k:"compl",l:"Compl."},
               {k:"note",l:"Note"},
-            {k:"dfa",l:"V.Anticipo"},
-            {k:"dfs",l:"V.Saldo"},
-            {k:"stato",l:"Stato"},
+              {k:"dfa",l:"V.Anticipo"},
+              {k:"dfs",l:"V.Saldo"},
+              {k:"stato",l:"Stato"},
               {k:"prog",l:"Progr."},
               {k:"alert",l:"Alert"},
               {k:"mod",l:"Modif."},
               {k:"azioni",l:"Azioni"}
-            ]).map(function(h){
+            ].map(function(h){
               var sortable=["data","cliente","tipo","resp","stato"].indexOf(h.k)>=0;
               return <th key={h.k} onClick={sortable?function(){toggleSort(h.k);}:undefined} style={{padding:"10px 6px",textAlign:"left",color:"white",fontWeight:700,fontSize:9,textTransform:"uppercase",whiteSpace:"nowrap",cursor:sortable?"pointer":"default",userSelect:"none"}}>{h.l}{sortable?sortArrow(h.k):null}</th>;
             })}
