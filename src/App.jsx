@@ -555,7 +555,7 @@ export default function App() {
       </div>
       <div style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
         <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:isAdmin?1650:1350}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:1650}}>
           <colgroup>
             <col style={{width:"72px"}}/>
             <col style={{width:"160px"}}/>
@@ -567,8 +567,8 @@ export default function App() {
             <col style={{width:"34px"}}/>
             <col style={{width:"52px"}}/>
             <col style={{width:"90px"}}/>
-            {isAdmin&&<col style={{width:"70px"}}/>}
-            {isAdmin&&<col style={{width:"70px"}}/>}
+            <col style={{width:"70px"}}/>
+            <col style={{width:"70px"}}/>
             <col style={{width:"88px"}}/>
             <col style={{width:"66px"}}/>
             <col style={{width:"72px"}}/>
@@ -587,8 +587,9 @@ export default function App() {
               {k:"fatt",l:"Fatt."},
               {k:"compl",l:"Compl."},
               {k:"note",l:"Note"},
-            ].concat(isAdmin?[{k:"dfa",l:"V.Anticipo"},{k:"dfs",l:"V.Saldo"}]:[]).concat([
-              {k:"stato",l:"Stato"},
+            {k:"dfa",l:"V.Anticipo"},
+            {k:"dfs",l:"V.Saldo"},
+            {k:"stato",l:"Stato"},
               {k:"prog",l:"Progr."},
               {k:"alert",l:"Alert"},
               {k:"mod",l:"Modif."},
@@ -612,8 +613,8 @@ export default function App() {
               <td style={{padding:"8px 6px",textAlign:"center",fontWeight:700,color:r.fatt==="X"?"#2E7D32":"#D1D5DB"}}>{r.fatt==="X"?"X":"-"}</td>
               <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dc} date={r.dc} disabled={false} onToggle={function(){toggleCompleto(r);}} color="blue"/></td>
               <td style={{padding:"8px 6px",fontSize:9,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.note}>{r.note}</td>
-              {isAdmin&&<td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled} onToggle={function(){toggleAnticipo(r);}} color="red"/></td>}
-              {isAdmin&&<td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.df} date={r.df} disabled={saldoDisabled} onToggle={function(){toggleSaldo(r);}} color="orange"/></td>}
+              <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled||!isAdmin} onToggle={function(){toggleAnticipo(r);}} color="red"/></td>
+              <td style={{padding:"8px 6px"}}><CheckboxVisto checked={!!r.df} date={r.df} disabled={saldoDisabled||!isAdmin} onToggle={function(){toggleSaldo(r);}} color="orange"/></td>
               <td style={{padding:"8px 6px"}}><StatoTag s={stato}/></td>
               <td style={{padding:"8px 6px"}}><Stars prog={prog}/></td>
               <td style={{padding:"8px 6px"}}><AlertTag a={alrt}/></td>
@@ -622,11 +623,11 @@ export default function App() {
                 <div style={{display:"flex",gap:3}}>
                   <button onClick={function(){setEditing(Object.assign({},r));}} style={{background:"#F3F4F6",border:"none",borderRadius:5,padding:"5px 6px",cursor:"pointer",display:"flex",alignItems:"center",color:"#374151"}} title="Modifica"><IconEdit/></button>
                   <button onClick={function(){sendEmail(r);}} style={{background:"#EDE9FE",border:"none",borderRadius:5,padding:"5px 6px",cursor:"pointer",display:"flex",alignItems:"center",color:"#6D28D9"}} title="Invia email"><IconMail/></button>
-                  {isAdmin&&<button onClick={function(e){e.stopPropagation();doDelete(r.id);}} style={{background:"#FEE2E2",border:"none",borderRadius:5,padding:"5px 6px",cursor:"pointer",display:"flex",alignItems:"center",color:"#C62828"}} title="Elimina"><IconTrash/></button>}
+                  <button onClick={function(e){e.stopPropagation();doDelete(r.id);}} style={{background:"#FEE2E2",border:"none",borderRadius:5,padding:"5px 6px",cursor:"pointer",display:"flex",alignItems:"center",color:"#C62828"}} title="Elimina"><IconTrash/></button>
                 </div>
               </td>
             </tr>;})}
-            {filtered.length===0&&<tr><td colSpan={isAdmin?17:15} style={{padding:30,textAlign:"center",color:"#9CA3AF"}}>Nessuna attivita trovata</td></tr>}
+            {filtered.length===0&&<tr><td colSpan={17} style={{padding:30,textAlign:"center",color:"#9CA3AF"}}>Nessuna attivita trovata</td></tr>}
           </tbody>
         </table></div>
         <div style={{padding:"8px 14px",borderTop:"1px solid #E5E7EB",color:"#9CA3AF",fontSize:11}}>{filtered.length} attivita - {user.nome}</div>
