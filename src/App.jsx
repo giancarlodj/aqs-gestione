@@ -663,25 +663,25 @@ export default function App() {
       </div>
       <div style={{background:"white",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
         <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:1780}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,tableLayout:"fixed",minWidth:1880}}>
           <colgroup>
             <col style={{width:"68px"}}/>
-            <col style={{width:"180px"}}/>
-            <col style={{width:"80px"}}/>
-            <col style={{width:"32px"}}/>
-            <col style={{width:"90px"}}/>
-            <col style={{width:"190px"}}/>
-            <col style={{width:"56px"}}/>
-            <col style={{width:"32px"}}/>
-            <col style={{width:"44px"}}/>
-            <col style={{width:"140px"}}/>
-            <col style={{width:"62px"}}/>
-            <col style={{width:"62px"}}/>
+            <col style={{width:"170px"}}/>
+            <col style={{width:"76px"}}/>
+            <col style={{width:"30px"}}/>
+            <col style={{width:"86px"}}/>
+            <col style={{width:"230px"}}/>
             <col style={{width:"54px"}}/>
+            <col style={{width:"30px"}}/>
+            <col style={{width:"70px"}}/>
+            <col style={{width:"180px"}}/>
+            <col style={{width:"70px"}}/>
+            <col style={{width:"70px"}}/>
+            <col style={{width:"34px"}}/>
             <col style={{width:"82px"}}/>
             <col style={{width:"62px"}}/>
-            <col style={{width:"68px"}}/>
-            <col style={{width:"70px"}}/>
+            <col style={{width:"66px"}}/>
+            <col style={{width:"66px"}}/>
             <col style={{width:"84px"}}/>
           </colgroup>
           <thead><tr style={{background:"#1F4E79"}}>
@@ -723,10 +723,10 @@ export default function App() {
               <td style={{padding:"8px 6px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:10}} title={r.lavoro}>{r.lavoro}</td>
               <td style={{padding:"8px 6px",fontWeight:600,color:"#2E75B6",fontSize:10}}>{r.resp}</td>
               <td style={{padding:"8px 6px",textAlign:"center"}}>{r.dc?<div style={{width:12,height:12,borderRadius:"50%",background:"#2E7D32",margin:"0 auto"}} title="Fatturabile"/>:<div style={{width:12,height:12,borderRadius:"50%",background:"#E5E7EB",margin:"0 auto"}} title="Non fatturabile"/>}</td>
-              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.dc} disabled={false} onToggle={function(){toggleCompleto(r);}} color="blue" hideDate/></td>
+              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.dc} date={r.dc} disabled={false} onToggle={function(){toggleCompleto(r);}} color="blue"/></td>
               <td style={{padding:"8px 6px",fontSize:9,color:"#6B7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.note}>{r.note}</td>
-              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled||!isAdmin} onToggle={function(){toggleAnticipo(r);}} color="red" hideDate/></td>
-              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.df} date={r.df} disabled={saldoDisabled||!isAdmin} onToggle={function(){toggleSaldo(r);}} color="orange" hideDate/></td>
+              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.dfa} date={r.dfa} disabled={anticDisabled||!isAdmin} onToggle={function(){toggleAnticipo(r);}} color="red"/></td>
+              <td style={{padding:"8px 4px"}}><CheckboxVisto checked={!!r.df} date={r.df} disabled={saldoDisabled||!isAdmin} onToggle={function(){toggleSaldo(r);}} color="orange"/></td>
               <td style={{padding:"8px 4px"}}><CheckboxVisto checked={hasNf} disabled={nfDisabled||!isAdmin} onToggle={function(){toggleNoFatt(r);}} color="gray" hideDate/></td>
               <td style={{padding:"8px 6px"}}><StatoTag s={stato}/></td>
               <td style={{padding:"8px 6px"}}><Stars prog={prog}/></td>
