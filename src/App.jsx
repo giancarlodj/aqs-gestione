@@ -364,8 +364,37 @@ export default function App() {
     var att=f.filter(function(r){return getStato(r)==="IN ATTESA";}).length;
     var tot=f.length,pct=tot?Math.round(fat/tot*100):0;
     var byR={};f.forEach(function(r){var k=r.resp||"N/A";if(!byR[k])byR[k]={t:0,f:0,d:0,a:0};byR[k].t++;var s=getStato(r);if(s==="FATTURATO")byR[k].f++;else if(s==="DA FATTURARE")byR[k].d++;else byR[k].a++;});
+    var byT={};f.forEach(function(r){var k=r.tipo||"Non classificato";if(!byT[k])byT[k]={t:0,f:0,d:0,a:0};byT[k].t++;var s=getStato(r);if(s==="FATTURATO")byT[k].f++;else if(s==="DA FATTURARE")byT[k].d++;else byT[k].a++;});
+    var compl=f.filter(function(r){return r.dc;}).length;
+    var antic=f.filter(function(r){return r.dfa;}).length;
+    var saldo=f.filter(function(r){return r.df;}).length;
     var alc=f.filter(function(r){return getAlert(r);}).length;
-    return {tot:tot,fat:fat,df:df,att:att,nv:f.filter(function(r){return r.nc==="SI";}).length,pct:pct,byR:byR,alc:alc};
+    // Ritardi: non completate, piu vecchie di 30 giorni
+    var today=new Date();
+    var ritardi=f.filter(function(r){
+      if(r.df||r.dc) return false;
+      var d=new Date(r.data);
+      return (today-d)/(1000*60*60*24)>30;
+    }).sort(function(a,b){return new Date(a.data)-new Date(b.data);});
+    // Tempo medio completamento (giorni)
+    var completati=f.filter(function(r){return r.data&&r.dc;});
+    var tempoMedio=0;
+    if(completati.length>0){
+      var somma=completati.reduce(function(acc,r){var diff=(new Date(r.dc)-new Date(r.data))/(1000*60*60*24);return acc+(diff>0?diff:0);},0);
+      tempoMedio=Math.round(somma/completati.length);
+    }
+    // Tempo medio fatturazione (giorni)
+    var fatturati=f.filter(function(r){return r.data&&r.df;});
+    var tempoFatt=0;
+    if(fatturati.length>0){
+      var sommaF=fatturati.reduce(function(acc,r){var diff=(new Date(r.df)-new Date(r.data))/(1000*60*60*24);return acc+(diff>0?diff:0);},0);
+      tempoFatt=Math.round(sommaF/fatturati.length);
+    }
+    // Trend mensile (ultimi 6 mesi)
+    var byM={};f.forEach(function(r){if(!r.data)return;var m=r.data.slice(0,7);if(!byM[m])byM[m]={t:0,f:0};byM[m].t++;if(getStato(r)==="FATTURATO")byM[m].f++;});
+    var mesi=Object.keys(byM).sort().slice(-6);
+    var byMese=mesi.map(function(m){return {mese:m,t:byM[m].t,f:byM[m].f};});
+    return {tot:tot,fat:fat,df:df,att:att,nv:f.filter(function(r){return r.nc==="SI";}).length,pct:pct,byR:byR,byT:byT,compl:compl,antic:antic,saldo:saldo,alc:alc,ritardi:ritardi,tempoMedio:tempoMedio,tempoFatt:tempoFatt,byMese:byMese};
   },[rows]);
 
   var filtered = useMemo(function(){
@@ -502,22 +531,93 @@ export default function App() {
     <div style={{padding:"20px 24px",maxWidth:1600,margin:"0 auto"}}>
 
     {view==="dashboard"&&<div>
-      <div style={{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}}>
+      {/* RIGA 1: KPI Principali */}
+      <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
         {[["Totale",stats.tot,"#1F4E79"],["Da fatturare",stats.df,"#C62828"],["In attesa",stats.att,"#E65100"],["Fatturato",stats.fat,"#2E7D32"],["% Fatturato",stats.pct+"%","#1F4E79"],["Nuovi contratti",stats.nv,"#2E75B6"]].map(function(item){
-          return <div key={item[0]} style={{background:"white",borderRadius:12,padding:"16px 20px",flex:1,minWidth:120,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
-            <div style={{fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase"}}>{item[0]}</div>
-            <div style={{fontSize:28,fontWeight:800,color:item[2],marginTop:4}}>{item[1]}</div>
+          return <div key={item[0]} style={{background:"white",borderRadius:12,padding:"14px 18px",flex:1,minWidth:110,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
+            <div style={{fontSize:9,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase"}}>{item[0]}</div>
+            <div style={{fontSize:26,fontWeight:800,color:item[2],marginTop:2}}>{item[1]}</div>
           </div>;
         })}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
-        <div style={{background:"white",borderRadius:14,padding:22}}><h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1F4E79"}}>Stato</h3><Pie data={[{label:"Da fatturare",v:stats.df,col:"#E57373"},{label:"In attesa",v:stats.att,col:"#FFB74D"},{label:"Fatturato",v:stats.fat,col:"#81C784"}]}/></div>
+      {/* RIGA 2: KPI Tempi e Performance */}
+      <div style={{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}}>
+        {[
+          ["Tempo medio compl.",stats.tempoMedio+" gg","#1565C0","Dalla creazione al completamento"],
+          ["Tempo medio fatt.",stats.tempoFatt+" gg","#6A1B9A","Dalla creazione alla fatturazione"],
+          ["In ritardo (>30gg)",stats.ritardi.length,"#C62828","Attivita non completate oltre 30 giorni"],
+          ["Alert attivi",stats.alc,"#E65100","Azioni richieste"]
+        ].map(function(item){
+          return <div key={item[0]} style={{background:"white",borderRadius:12,padding:"14px 18px",flex:1,minWidth:140,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
+            <div style={{fontSize:9,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase"}}>{item[0]}</div>
+            <div style={{fontSize:26,fontWeight:800,color:item[2],marginTop:2}}>{item[1]}</div>
+            <div style={{fontSize:9,color:"#9CA3AF",marginTop:2}}>{item[3]}</div>
+          </div>;
+        })}
+      </div>
+      {/* RIGA 3: Grafici Stato + Responsabile */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+        <div style={{background:"white",borderRadius:14,padding:22}}><h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1F4E79"}}>Stato Commesse</h3><Pie data={[{label:"Da fatturare",v:stats.df,col:"#E57373"},{label:"In attesa",v:stats.att,col:"#FFB74D"},{label:"Fatturato",v:stats.fat,col:"#81C784"}]}/></div>
         <div style={{background:"white",borderRadius:14,padding:22}}><h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1F4E79"}}>Per Responsabile</h3>
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
           <thead><tr style={{borderBottom:"2px solid #E5E7EB"}}>{["Nome","Tot","Da f.","Att.","Fatt","%"].map(function(h){return <th key={h} style={{padding:"6px",textAlign:"left",color:"#9CA3AF",fontSize:9,fontWeight:700,textTransform:"uppercase"}}>{h}</th>;})}</tr></thead>
           <tbody>{Object.entries(stats.byR).sort(function(a,b){return b[1].t-a[1].t;}).map(function(entry){var n=entry[0],s=entry[1];return <tr key={n} style={{borderBottom:"1px solid #F3F4F6"}}><td style={{padding:"6px",fontWeight:700,color:"#1F4E79"}}>{n}</td><td style={{padding:"6px",fontWeight:700}}>{s.t}</td><td style={{padding:"6px",color:"#C62828"}}>{s.d}</td><td style={{padding:"6px",color:"#E65100"}}>{s.a}</td><td style={{padding:"6px",color:"#2E7D32"}}>{s.f}</td><td style={{padding:"6px",fontWeight:700}}>{s.t?Math.round(s.f/s.t*100):0}%</td></tr>;})}</tbody>
         </table></div>
       </div>
+      {/* RIGA 4: Tipologia + Avanzamento */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+        <div style={{background:"white",borderRadius:14,padding:22}}><h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1F4E79"}}>Per Tipologia</h3>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <thead><tr style={{borderBottom:"2px solid #E5E7EB"}}>{["Tipologia","Tot","Da f.","Att.","Fatt","%"].map(function(h){return <th key={h} style={{padding:"6px",textAlign:"left",color:"#9CA3AF",fontSize:9,fontWeight:700,textTransform:"uppercase"}}>{h}</th>;})}</tr></thead>
+          <tbody>{Object.entries(stats.byT).sort(function(a,b){return b[1].t-a[1].t;}).map(function(entry){var n=entry[0],s=entry[1];return <tr key={n} style={{borderBottom:"1px solid #F3F4F6"}}><td style={{padding:"6px",fontWeight:600,color:"#1F4E79",fontSize:11}}>{n}</td><td style={{padding:"6px",fontWeight:700}}>{s.t}</td><td style={{padding:"6px",color:"#C62828"}}>{s.d}</td><td style={{padding:"6px",color:"#E65100"}}>{s.a}</td><td style={{padding:"6px",color:"#2E7D32"}}>{s.f}</td><td style={{padding:"6px",fontWeight:700}}>{s.t?Math.round(s.f/s.t*100):0}%</td></tr>;})}</tbody>
+        </table></div>
+        <div style={{background:"white",borderRadius:14,padding:22}}><h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1F4E79"}}>Avanzamento Fatturazione</h3>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          {[["Completati",stats.compl,stats.tot,"#1565C0"],["Anticipi emessi",stats.antic,stats.nv||1,"#6A1B9A"],["Saldi emessi",stats.saldo,stats.tot,"#2E7D32"]].map(function(item){var pct=item[2]?Math.round(item[1]/item[2]*100):0;return <div key={item[0]}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:12,fontWeight:600,color:"#374151"}}>{item[0]}</span><span style={{fontSize:12,fontWeight:800,color:item[3]}}>{item[1]}/{item[2]} ({pct}%)</span></div>
+            <div style={{background:"#F3F4F6",borderRadius:4,height:8}}><div style={{height:"100%",borderRadius:4,background:item[3],width:pct+"%",transition:"width 0.3s"}}/></div>
+          </div>;})}
+        </div></div>
+      </div>
+      {/* RIGA 5: Trend Mensile + Ritardi */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+        <div style={{background:"white",borderRadius:14,padding:22}}><h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1F4E79"}}>Trend Mensile (ultimi 6 mesi)</h3>
+        {stats.byMese.length>0?<div>
+          <div style={{display:"flex",alignItems:"flex-end",gap:8,height:140,marginBottom:12}}>
+            {stats.byMese.map(function(m){var maxV=Math.max.apply(null,stats.byMese.map(function(x){return x.t;}))||1;var h1=Math.round((m.t/maxV)*120);var h2=Math.round((m.f/maxV)*120);return <div key={m.mese} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#1F4E79"}}>{m.t}</div>
+              <div style={{width:"100%",display:"flex",gap:2,alignItems:"flex-end",justifyContent:"center"}}>
+                <div style={{width:"40%",height:h1,background:"#BBDEFB",borderRadius:"4px 4px 0 0"}}/>
+                <div style={{width:"40%",height:h2,background:"#2E7D32",borderRadius:"4px 4px 0 0"}}/>
+              </div>
+            </div>;})}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {stats.byMese.map(function(m){var parts=m.mese.split("-");var nomiMesi=["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];return <div key={m.mese} style={{flex:1,textAlign:"center",fontSize:9,color:"#6B7280",fontWeight:600}}>{nomiMesi[parseInt(parts[1])-1]} {parts[0].slice(2)}</div>;})}
+          </div>
+          <div style={{display:"flex",gap:16,marginTop:12,justifyContent:"center"}}>
+            <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10}}><div style={{width:10,height:10,background:"#BBDEFB",borderRadius:2}}/> Totale</div>
+            <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10}}><div style={{width:10,height:10,background:"#2E7D32",borderRadius:2}}/> Fatturato</div>
+          </div>
+        </div>:<div style={{color:"#9CA3AF",fontSize:12,textAlign:"center",padding:30}}>Nessun dato disponibile</div>}
+        </div>
+        <div style={{background:"white",borderRadius:14,padding:22}}><h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#C62828"}}>In Ritardo ({stats.ritardi.length})</h3>
+        <div style={{fontSize:10,color:"#6B7280",marginBottom:10}}>Attivita non completate da oltre 30 giorni</div>
+        {stats.ritardi.length>0?<div style={{maxHeight:200,overflow:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <thead><tr style={{borderBottom:"2px solid #E5E7EB"}}>{["Data","Cliente","Resp.","Giorni"].map(function(h){return <th key={h} style={{padding:"5px",textAlign:"left",color:"#9CA3AF",fontSize:9,fontWeight:700,textTransform:"uppercase",position:"sticky",top:0,background:"white"}}>{h}</th>;})}</tr></thead>
+            <tbody>{stats.ritardi.slice(0,15).map(function(r){var gg=Math.round((new Date()-new Date(r.data))/(1000*60*60*24));return <tr key={r.id} style={{borderBottom:"1px solid #F3F4F6",cursor:"pointer"}} onClick={function(){setView("lista");setSearch(r.cliente);}}>
+              <td style={{padding:"5px",fontSize:10}}>{fDate(r.data)}</td>
+              <td style={{padding:"5px",fontWeight:600,color:"#1F4E79"}}>{r.cliente}</td>
+              <td style={{padding:"5px",color:"#6B7280"}}>{r.resp||"-"}</td>
+              <td style={{padding:"5px",fontWeight:800,color:gg>90?"#C62828":gg>60?"#E65100":"#F57C00"}}>{gg}gg</td>
+            </tr>;})}</tbody>
+          </table>
+          {stats.ritardi.length>15&&<div style={{textAlign:"center",padding:6,fontSize:10,color:"#9CA3AF"}}>...e altri {stats.ritardi.length-15}</div>}
+        </div>:<div style={{color:"#2E7D32",fontSize:13,textAlign:"center",padding:30,fontWeight:600}}>Nessun ritardo</div>}
+        </div>
+      </div>
+      {/* RIGA 6: Bottoni azione */}
       <div style={{display:"flex",gap:10}}>
         <button onClick={function(){setView("lista");setFilter("DA FATTURARE");}} style={{padding:"8px 14px",background:"#FFCDD2",color:"#C62828",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer"}}>Da Fatturare ({stats.df})</button>
         <button onClick={function(){setView("lista");setFilter("ALERT");}} style={{padding:"8px 14px",background:"#FFF3E0",color:"#E65100",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer"}}>Alert ({stats.alc})</button>
