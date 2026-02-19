@@ -1,143 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-
-var DEFAULT_USERS = {
-  cinzia:{password:"cinzia2026",nome:"CINZIA",ruolo:"dipendente"},
-  nicole:{password:"nicole2026",nome:"NICOLE",ruolo:"dipendente"},
-  silvia:{password:"silvia2026",nome:"SILVIA",ruolo:"dipendente"},
-  massimo:{password:"massimo2026",nome:"MASSIMO",ruolo:"dipendente"},
-  giuseppe:{password:"giuseppe2026",nome:"GIUSEPPE",ruolo:"dipendente"},
-  desena:{password:"desena2026",nome:"DE SENA",ruolo:"dipendente"},
-  admin:{password:"admin2026",nome:"AMMINISTRAZIONE",ruolo:"admin"},
-};
+import { useState, useEffect, useMemo } from "react";
 
 var TIPOLOGIE = ["Formazione extra contratto","Sicurezza odontoiatria","Sicurezza sanitario","Sicurezza veterinaria","Sicurezza altro","Medicina del lavoro","Autorizzazione sanitaria","Altre attivita"];
 
-var IMPORTED = [
-{id:1,data:"2025-02-25",cliente:"CONIZUGNA MEDICA SRL",sede:"MILANO",nc:"SI",tipo:"",lavoro:"NOMINA ADDETTO SICUREZZA LASER + RELAZIONE",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:2,data:"2025-03-27",cliente:"TRIPLA A DENTALE",sede:"ROMA Via Tevere, 39",nc:"NO",tipo:"",lavoro:"SOSTITUZIONE OPT TAC",resp:"MASSIMO",dc:"2025-03-27",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:3,data:"2025-06-13",cliente:"HDENTAL PERGINE",sede:"PERGINE",nc:"NO",tipo:"",lavoro:"INVIO PRATICA CAMBIO DIRETTORE SANITARIO",resp:"CINZIA",dc:"2025-07-21",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:4,data:"2025-06-25",cliente:"GAP MED DEMETRA CLINICS elettro",sede:"MILANO",nc:"SI",tipo:"",lavoro:"",resp:"NICOLE",dc:"",fatt:"",note:"DISDETTA",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:5,data:"2025-07-04",cliente:"DENTI E SALUTE",sede:"",nc:"",tipo:"",lavoro:"FORMAZIONE PREPOSTO FAD",resp:"",dc:"",fatt:"",note:"Ciardiello, Tosi, Barretta, Cappalunga e Papagna",dfa:"",df:"2025-09-08",cBy:"admin",uBy:"",uAt:""},
-{id:6,data:"2025-07-17",cliente:"CIEMME",sede:"",nc:"",tipo:"",lavoro:"FORMAZIONE RLS SU PIATTAFORMA DE SENA",resp:"",dc:"",fatt:"",note:"",dfa:"",df:"2026-02-17",cBy:"admin",uBy:"",uAt:""},
-{id:7,data:"2025-08-27",cliente:"DP DENT",sede:"MANTOVA",nc:"NO",tipo:"",lavoro:"SOSTITUZIONE APPARECCHIO RX",resp:"CINZIA",dc:"2025-09-01",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:8,data:"2025-09-18",cliente:"Ambulatorio Lorena Karanxha",sede:"CALOLZIOCORTE",nc:"SI",tipo:"",lavoro:"SCIA APERTURA E DOCUMENTI SICUREZZA",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"2025-09-15",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:9,data:"2025-09-18",cliente:"SAPRA (POLISPECIALISTICO)",sede:"MILANO",nc:"SI",tipo:"",lavoro:"SCIA APERTURA E DOCUMENTI SICUREZZA",resp:"CINZIA",dc:"2025-11-06",fatt:"X",note:"",dfa:"2025-10-21",df:"2025-01-14",cBy:"admin",uBy:"",uAt:""},
-{id:10,data:"2025-10-22",cliente:"Serenis",sede:"",nc:"",tipo:"",lavoro:"variazio Scia per introduzione endocrinolgi e dietologi a febbraio 2026",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:11,data:"2025-10-31",cliente:"LONGEVITY MEDICAL SRL",sede:"MILANO SCALA",nc:"NO",tipo:"",lavoro:"REQUISITI SANITARI e poi AMPLIAMENTO NEL 2026",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:12,data:"2025-11-17",cliente:"DENTALPRO",sede:"NUOVA APERTURA CAMPOBASSO GENNAIO 2026",nc:"SI",tipo:"",lavoro:"NUOVA CLINICA:DOCUMENTI SICUREZZA E RX",resp:"",dc:"2026-01-08",fatt:"X",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:13,data:"2025-12-02",cliente:"Ferri Vittorio Studio dentistico S.r.l. (DENTALPRO)",sede:"Via Mario Vellani Marchi 50 – 41124 Modena (MO)",nc:"SI",tipo:"",lavoro:"NUOVA CLINICA:DOCUMENTI SICUREZZA E RX",resp:"CINZIA",dc:"2026-01-08",fatt:"X",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:14,data:"2025-12-02",cliente:"HDENTAL 1 SRL",sede:"LODI",nc:"NO",tipo:"",lavoro:"PRATICA PER CAMBIO DIRETTORE SANITARIO",resp:"CINZIA",dc:"2025-12-11",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:15,data:"2025-12-02",cliente:"LONGEVITY MEDICAL SRL",sede:"COMO",nc:"SI",tipo:"",lavoro:"AUTORIZZAZIONE SANITARIA E REQUISITI",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"",df:"2026-02-18",cBy:"admin",uBy:"",uAt:""},
-{id:16,data:"2025-12-03",cliente:"ADCO Hub s.c.a.r.l.",sede:"Milano",nc:"NO",tipo:"",lavoro:"1 CORSO RISCHIO BASSO IMPIAGATA NEL SETTORE SANITARIO- Carmela Fiordaliso",resp:"NICOLE",dc:"2025-12-03",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:17,data:"2025-12-09",cliente:"LONGEVITY MEDICAL SRL",sede:"COMO",nc:"SI",tipo:"",lavoro:"dvr longevity como estetica del 9.12.2025",resp:"NICOLE",dc:"2025-12-09",fatt:"X",note:"fatto per colmare una richiesta di maternità. Il dvr ha ragione sociale medical ma contenuti come centro estetico. Il dvr definitov como sarà fatto post trasformazione",dfa:"",df:"2026-02-17",cBy:"admin",uBy:"",uAt:""},
-{id:18,data:"2025-12-11",cliente:"HDENTAL 2 SRL",sede:"PARMA",nc:"NO",tipo:"",lavoro:"PRATICA PER CAMBIO DIRETTORE SANITARIO",resp:"CINZIA",dc:"2025-12-12",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:19,data:"2025-12-11",cliente:"HDENTAL 2 SRL",sede:"FROSINONE",nc:"NO",tipo:"",lavoro:"PRATICA PER CAMBIO DIRETTORE SANITARIO",resp:"CINZIA",dc:"2025-12-16",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:20,data:"2025-12-11",cliente:"DP DENT S.R.L.",sede:"MONSELICE",nc:"NO",tipo:"",lavoro:"NOMINA ADDETTO SICUREZZA LASER + RELAZIONE",resp:"CINZIA",dc:"2025-12-11",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:21,data:"2025-12-11",cliente:"Ferri Vittorio Studio Dentistico S.r.l. (DENTALPRO)",sede:"MODENA",nc:"SI",tipo:"",lavoro:"NOMINA ADDETTO SICUREZZA LASER + RELAZIONE",resp:"CINZIA",dc:"2025-12-15",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:22,data:"2025-12-11",cliente:"DP DENT S.R.L.",sede:"OLBIA",nc:"NO",tipo:"",lavoro:"NOMINA ADDETTO SICUREZZA LASER + RELAZIONE",resp:"CINZIA",dc:"2025-12-15",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:23,data:"2025-12-04",cliente:"TRIPLA A DENTALE S.R.L.",sede:"3 CLINICHE ROMANE",nc:"NO",tipo:"",lavoro:"NOMINA ADDETTO SICUREZZA LASER + RELAZIONE",resp:"CINZIA",dc:"2025-12-15",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:24,data:"2025-12-12",cliente:"A.A. Pet S.r.l.",sede:"Roma Prenestina",nc:"NO",tipo:"",lavoro:"dvr - allegati al dvr - pem e planim",resp:"NICOLE",dc:"2025-12-12",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:25,data:"2025-12-12",cliente:"Diagnostica Veterinaria S.r.l.",sede:"Diagnostica Roma Nord",nc:"NO",tipo:"",lavoro:"DVR - ALLEGATI AL DVR - PEM E PLANIMETRIE",resp:"NICOLE",dc:"2025-12-12",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:26,data:"2025-12-12",cliente:"Animal Hospital S.r.l.",sede:"Velletri",nc:"NO",tipo:"",lavoro:"dvr ED ALLEGATI AL DVR- duvri pulizie - pem e planimetrie",resp:"NICOLE",dc:"2025-12-12",fatt:"X",note:"",dfa:"",df:"2026-01-30",cBy:"admin",uBy:"",uAt:""},
-{id:27,data:"2025-12-12",cliente:"Ospedale Giardini Margherita S.r.l.",sede:"Ospedale Veterinario Giardini Margherita",nc:"NO",tipo:"",lavoro:"dvr ED ALLEGATI AL DVR - duvri pulizie - pem e planimetrie evacuazione",resp:"NICOLE",dc:"2025-12-12",fatt:"X",note:"",dfa:"",df:"2026-01-30",cBy:"admin",uBy:"",uAt:""},
-{id:28,data:"2025-12-12",cliente:"Ospedale Giardini Margherita S.r.l.",sede:"Ambulatorio Veterinario Vittoria",nc:"NO",tipo:"",lavoro:"dvr duvri pul pem e planimetria evacuazione",resp:"NICOLE",dc:"2025-12-12",fatt:"X",note:"",dfa:"",df:"2026-01-30",cBy:"admin",uBy:"",uAt:""},
-{id:29,data:"2025-12-12",cliente:"BLUVET S.p.A.",sede:"HQ BV",nc:"SI",tipo:"",lavoro:"ALLEGATI - DVR E PEM",resp:"NICOLE",dc:"2025-12-12",fatt:"X",note:"in sede direzionale ca zampa via Gioberti-",dfa:"",df:"2026-01-30",cBy:"admin",uBy:"",uAt:""},
-{id:30,data:"2025-12-15",cliente:"COLOSSEUM DENTAL SRL",sede:"VICENZA",nc:"NO",tipo:"",lavoro:"CORSO ASO PIDO NAOMI SU PIATTAFORMA POI VALIDATO DA VIDEOCALL",resp:"NICOLE",dc:"2025-12-09",fatt:"X",note:"",dfa:"",df:"2026-01-30",cBy:"admin",uBy:"",uAt:""},
-{id:31,data:"2025-12-17",cliente:"Serenis",sede:"Milano viale abruzzi",nc:"NO",tipo:"",lavoro:"PRATICA PER CAMBIO DIRETTORE SANITARIO metà gennaio 2026",resp:"CINZIA",dc:"2026-01-08",fatt:"X",note:"",dfa:"",df:"2026-01-30",cBy:"admin",uBy:"",uAt:""},
-{id:32,data:"2025-12-19",cliente:"STUDIO TASSERA",sede:"",nc:"",tipo:"",lavoro:"SOSTITUZIONE CBCT A GENNAIO 2026",resp:"",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:33,data:"2025-12-24",cliente:"AB S.R.L. (ACQUISIZIONE dentalpro GENNAIO 2026)",sede:"Alba (CN)",nc:"SI",tipo:"",lavoro:"SICUREZZA+RX",resp:"NICOLE",dc:"2026-01-02",fatt:"X",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:34,data:"2025-12-22",cliente:"DP DENT S.R.L.",sede:"ROVIGO 1 Corso del popolo",nc:"NO",tipo:"",lavoro:"RELAZIONE LASER + NOMINA ADDETTO SICUREZZA LASER",resp:"CINZIA",dc:"2026-01-09",fatt:"X",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:35,data:"2026-01-09",cliente:"DP DENT S.R.L.",sede:"Pavia",nc:"NO",tipo:"",lavoro:"RELAZIONE LASER + NOMINA ADDETTO SICUREZZA LASER",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:36,data:"",cliente:"dentapro legionella da inserire",sede:"ARIA SERIATE, san rocco al porto, ecc..",nc:"",tipo:"",lavoro:"",resp:"",dc:"",fatt:"",note:"NICOLE MANDATO MAIL A BOSS MASSIMO CON CAMPIONAMENTI 2025 DENTALPRO - SOLO SAN ROCCO AL PORTO",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:37,data:"2026-01-15",cliente:"longevity spa",sede:"firenze e roma",nc:"NO",tipo:"",lavoro:"due corsi primo soccorso",resp:"NICOLE",dc:"2025-01-15",fatt:"X",note:"nicole firmato controo 180euro+iva a corso dati a sapra. Longevity prezzo ad hoc per corsi ps fatti fuori ufficio aqs.guardare contratto",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:38,data:"2026-01-21",cliente:"rho uno srl",sede:"rho",nc:"NO",tipo:"",lavoro:"pacchetto 12 corso radioprotezione operatori",resp:"NICOLE",dc:"2026-01-21",fatt:"X",note:"pacchetto agevolato di 12 corsi di Radioprotezione - Sicurezza per operatori. Costo: 25 EUR + IVA per corso. Totale: 300 EUR + IVA",dfa:"",df:"2026-01-29",cBy:"admin",uBy:"",uAt:""},
-{id:39,data:"2025-01-27",cliente:"studio rtd",sede:"MILANO",nc:"NO",tipo:"",lavoro:"dvr nuov per cambio sede - in regus",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:40,data:"2026-01-27",cliente:"ALTAMEDICA-PHARMARTE SRL",sede:"MILANO",nc:"NO",tipo:"",lavoro:"SUPPORTO RELAZIONE SANITARIA E INVIO ATS ELENCO PERSONALE AGGIORNATO",resp:"",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:41,data:"2026-01-28",cliente:"LONGEVITY VIA BORDONI MILANO",sede:"MILANO PORTA NUOVA",nc:"NO",tipo:"",lavoro:"VARIAZIONE DS",resp:"CINZIA",dc:"2026-01-28",fatt:"X",note:"",dfa:"",df:"2026-01-28",cBy:"admin",uBy:"",uAt:""},
-{id:42,data:"2025-10-01",cliente:"LONGEVITY MEDICAL",sede:"TUTTE",nc:"SI",tipo:"",lavoro:"ELETTROMEDICALI E IMP ELETTRICO",resp:"MASSIMO",dc:"",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:43,data:"2025-10-01",cliente:"longevity spa",sede:"TUTTE",nc:"SI",tipo:"",lavoro:"ELETTROMEDICALI E IMP ELETTRICO",resp:"MASSIMO",dc:"",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:44,data:"2026-02-02",cliente:"DP DENT S.R.L.NERVIANO",sede:"NERVIANO",nc:"NO",tipo:"",lavoro:"RELAZIONE LASER + NOMINA ADDETTO SICUREZZA LASER",resp:"CINZIA",dc:"2026-02-02",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:45,data:"2026-02-02",cliente:"DP DENT S.R.L. MILANO SAN SIRO",sede:"MILANO SAN SIRO",nc:"NO",tipo:"",lavoro:"RELAZIONE LASER + NOMINA ADDETTO SICUREZZA LASER",resp:"CINZIA",dc:"2026-02-02",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:46,data:"2026-02-02",cliente:"LONGEVITY MEDICAL COMO",sede:"COMO",nc:"SI",tipo:"",lavoro:"DOCUMENTAZIONE SICUREZZA",resp:"NICOLE",dc:"",fatt:"X",note:"FATTO DIC 2025 DVR PROVVISIORIO COME CENTRO ESTETICO",dfa:"",df:"2026-02-18",cBy:"admin",uBy:"",uAt:""},
-{id:47,data:"2026-02-02",cliente:"BV CA ZAMPA CLINICA VETERINARIA PONENTE GENOVA",sede:"",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"NICOLE",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-duvri pulizie-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:48,data:"2026-02-02",cliente:"BV CA ZAMPA AMBULATORIO VETERINARIO GOLFO PARADISO",sede:"",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"NICOLE",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-duvri pulizie-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:49,data:"2026-02-02",cliente:"BV CA ZAMPA CLINICA VETERINARIA SANT'ANGELO - CLINICA",sede:"",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"NICOLE",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-duvri pulizie-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:50,data:"2026-02-02",cliente:"BV CLINICA VETERINARIA SANT'ANGELO - SETTORE FISIOTERAPIA",sede:"",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"NICOLE",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-duvri pulizie-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:51,data:"2026-02-02",cliente:"BV CA ZAMPA CLINICA VETERINARIA OLTREPO'",sede:"",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"NICOLE",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-duvri pulizie-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:52,data:"2026-02-02",cliente:"BV CA ZAMPA OSPEDALE VETERINARIO SAN CONCORDIO",sede:"",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"NICOLE",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-duvri pulizie-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:53,data:"2026-02-02",cliente:"Serenis",sede:"TUTTE LE SEDI",nc:"NO",tipo:"",lavoro:"FORMAZIONE SU SITO DA SVOLGERE - SICREZZA ART 37",resp:"SILVIA",dc:"2026-02-02",fatt:"X",note:"23 CORSI",dfa:"",df:"2026-01-30",cBy:"admin",uBy:"",uAt:""},
-{id:54,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Firenze Centro",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:55,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Firenze Novoli",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:56,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Sesto Fiorentino",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:57,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Scandicci",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:58,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Incisa Val d'Arno",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:59,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Santa Croce sull'Arno",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:60,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Lucca",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:61,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Viareggio",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:62,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Livorno",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:63,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Massa",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:64,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Carrara",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:65,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Sarzana",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:66,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Prato",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:67,data:"2026-02-02",cliente:"Studi Dentistici dott. Nicola Paoleschi S.r.l.",sede:"Pistoia",nc:"SI",tipo:"",lavoro:"CAMPIONAMENTO LEGIONELLA IN ACS",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"2026-01-21",cBy:"admin",uBy:"",uAt:""},
-{id:68,data:"2026-02-04",cliente:"BV CA ZAMPA Clinica veterinaria San Geminiano srl",sede:"Modena",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:69,data:"2026-02-04",cliente:"BV CA ZMPA Neurotecnologie veterinarie srl",sede:"Legnano",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:70,data:"2026-02-04",cliente:"BV CA ZAMPA S.Alessandro Srl",sede:"Roncadelle",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:71,data:"2026-02-04",cliente:"BV CA ZAMPA Sambuco clinica veterinaria srl",sede:"Milano",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:72,data:"2026-02-04",cliente:"BV CA ZAMPA Clinica veterinaria centrale srl",sede:"Milano",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:73,data:"2026-02-04",cliente:"BV CA ZAMPA Ospedale Veterinario San Michele srl",sede:"Tavazzano con Villavesco",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:74,data:"2026-02-04",cliente:"BV CA ZAMPA Vetsansilvestro srl",sede:"Castiglion Fiorentino",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:75,data:"2026-02-04",cliente:"BV CA ZAMPA Clinica Veterinaria Carvico srl",sede:"Carvico",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:76,data:"2026-02-04",cliente:"BV CA ZAMPA Centro Veterinario Bolognese srl  CLINICA",sede:"Bologna",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:77,data:"2026-02-04",cliente:"BV CA ZAMPA Centro Veterinario Bolognese srl  AMBULATORIO",sede:"Bologna",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"X",note:"NOMINA RSPP-allegati dvr-dvr-pem-planimetrie - NOMINA MC",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:78,data:"2026-02-04",cliente:"BV CA ZAMPA Clinica veterinaria Lainate srl CLINICA",sede:"Lainate",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"",note:"NOMINA RSPP",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:79,data:"2026-02-04",cliente:"BV CA ZAMPA Clinica veterinaria Lainate srl AMBULATORIO",sede:"Lainate",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"",note:"NOMINA RSPP",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:80,data:"2026-02-04",cliente:"BV CA ZAMPA Anubi srl OSPEDALE",sede:"Moncalieri",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"",note:"NOMINA RSPP",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:81,data:"2026-02-04",cliente:"BV CA ZAMPA Anubi srl AMBULATORIO",sede:"Moncalieri",nc:"SI",tipo:"",lavoro:"SICUREZZA E ATTIVARE SORVEGLIANZA SANITARIA",resp:"SILVIA",dc:"",fatt:"",note:"NOMINA RSPP",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:82,data:"2026-02-04",cliente:"TESTORI",sede:"",nc:"",tipo:"",lavoro:"USCITA MEDICO IN SEDE € 350,00 USCITA INFERMIERE €100",resp:"MASSIMO",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:83,data:"2026-02-05",cliente:"LONGEVITY MEDICAL SRL",sede:"COMO",nc:"NO",tipo:"",lavoro:"NUOVO DVR COME POLIAMB, ALLEGATI AL DVR,DUVRI,PEM E PLANIMETIRE",resp:"NICOLE",dc:"",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:84,data:"2026-02-06",cliente:"CA ZAMPA - BRUGNATO - LA SPEZIA BONATI CHIOCCA",sede:"brugnato",nc:"NO",tipo:"",lavoro:"aggiornamento del DVR, l’elaborazione delle nomine, il verbale di elezione del RLS e il verbale di consegna DPI e con l’attivazione della sorveglianza sanitaria.",resp:"NICOLE",dc:"",fatt:"X",note:"nuovo dvr in quanto da collaboratori ora vi sono dipendenti",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:85,data:"2026-02-06",cliente:"Ca' Zampa S.r.l.",sede:"Gaggiolo",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:86,data:"2026-02-06",cliente:"Clinica Veterinaria Campo Marzio S.r.l.",sede:"Trieste",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:87,data:"2026-02-06",cliente:"Istituto Diagnostico Veterinario S.r.l.",sede:"IDV C.so C. Colombo",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:88,data:"2026-02-06",cliente:"OSPEDALE VETERINARIO AMICI DEGLI ANIMALI SRL",sede:"Latina",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:89,data:"2026-02-06",cliente:"CLINICA VETERINARIA EMILVETSERVICES PET&CARE SRL",sede:"Ozzano",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:90,data:"2026-02-06",cliente:"SALUS VET 22 S.R.L.",sede:"Zagarolo",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:91,data:"2026-02-06",cliente:"CLINICA VETERINARIA PINETA SRL",sede:"Pineta Appiano Gentile",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:92,data:"2026-02-06",cliente:"CLINICA VETERINARIA SAN MARTINO SRL",sede:"San Martino Novara",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:93,data:"2026-02-06",cliente:"Locovet srl",sede:"Locovet Locorotondo (BA)",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:94,data:"2026-02-06",cliente:"CA' Zampa S.r.l.",sede:"Clinica Veterinaria Dott.Giardinelli Treviglio",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:95,data:"2026-02-06",cliente:"CA' Zampa S.r.l.",sede:"Milano Montenero",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:96,data:"2026-02-06",cliente:"Ca' Zampa S.r.l.",sede:"Cremona",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:97,data:"2026-02-06",cliente:"CA' Zampa S.r.l.",sede:"Arese",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:98,data:"2026-02-06",cliente:"CA' Zampa S.r.l.",sede:"Milano Portello",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:99,data:"2026-02-06",cliente:"Clinica Veterinaria Orvieto S.r.l.",sede:"Clinica Veterinaria Orvieto",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl  e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:100,data:"2026-02-06",cliente:"Clinica Veterinaria Orvieto S.r.l.",sede:"Centro Diagnostico Orvieto",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl  e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:101,data:"2026-02-06",cliente:"Cliniche Veterinarie Pinerolesi S.r.l.",sede:"CVP",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:102,data:"2026-02-06",cliente:"Centro Chirurgico Veterinario Campanale S.r.l.",sede:"Centro Chirurgico Veterinario Andria",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:103,data:"2026-02-06",cliente:"Clinica Veterinaria Vigna Clara S.r.l.",sede:"Clinica Veterinaria Vigna Clara",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:104,data:"2026-02-06",cliente:"A.A. Pet srl",sede:"Roma Prenestina",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:105,data:"2026-02-06",cliente:"Diagnostica Veterinaria srl",sede:"Diagnostica Roma Nord",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:106,data:"2026-02-06",cliente:"Animal Hospital srl",sede:"Velletri",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:107,data:"2026-02-06",cliente:"Ospedale Giardini Margherita Srl",sede:"Ospedale Veterinario Giardini Margherita",nc:"NO",tipo:"",lavoro:"aggiornamento dvr per rischio stess lavoro correlato -",resp:"NICOLE",dc:"",fatt:"X",note:"aggiornamento rischio stress lavoro correlato - nuovo dl - nuovo medico competente e inserimento valutazione laser classe 4 se presente",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:108,data:"2026-02-06",cliente:"LONGEVITY MEDICAL",sede:"COMO",nc:"NO",tipo:"",lavoro:"PIANO DI AUTOCONTROLLO HACCP",resp:"NICOLE",dc:"",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:109,data:"2026-02-09",cliente:"centro medico grugliasco",sede:"",nc:"NO",tipo:"",lavoro:"3 CORSI DI RADIOPROTEZIONE",resp:"NICOLE",dc:"",fatt:"X",note:"VENDUTI A 50+IVA cad",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:110,data:"2026-02-09",cliente:"CIEMME",sede:"",nc:"NO",tipo:"",lavoro:"corso rls online",resp:"NICOLE",dc:"",fatt:"X",note:"fatto su piattafirma fornito da Giuseppe (50euro a lui)",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:111,data:"2026-02-10",cliente:"LONGEVITY COMO",sede:"COMO",nc:"SI",tipo:"",lavoro:"SUPPORTO SCIA DI STEFANO VELTRI",resp:"CINZIA",dc:"2026-02-10",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:112,data:"2026-02-10",cliente:"HDENTAL 1",sede:"PERGINE VALSUGANA",nc:"NO",tipo:"",lavoro:"SOSTITUZIONE RX",resp:"CINZIA",dc:"2026-02-10",fatt:"X",note:"INVIATA PRATICA PREVENTIVA POI BALDASSARRE FARà IL SOPRALLUOGO",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:113,data:"2026-02-10",cliente:"CIEMME",sede:"",nc:"NO",tipo:"",lavoro:"CORSO ONLINE STAMPATORE",resp:"NICOLE",dc:"2026-02-17",fatt:"X",note:"GIUSEPPE FA VIDEOCALL DI DUE ORE CON LAVORATORE (CHIESI DA GIUSEPPE 120EURO)",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:114,data:"2026-01-21",cliente:"903 GM Odontotecnica",sede:"Via Risorgimento, 459 - 22070 Cassina Rizzardi CO",nc:"SI",tipo:"",lavoro:"DOCUMENTAZIONE SICUREZZA",resp:"DE SENA",dc:"2026-02-11",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:115,data:"2026-01-21",cliente:"904 Trace Dental",sede:"Via Bard 64/A Torino TO",nc:"SI",tipo:"",lavoro:"DOCUMENTAZIONE SICUREZZA",resp:"DE SENA",dc:"2026-02-11",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:116,data:"2026-01-21",cliente:"905 Spring Laboratory",sede:"Via Ionica, 6 – 96100 Siracusa SR",nc:"SI",tipo:"",lavoro:"DOCUMENTAZIONE SICUREZZA",resp:"DE SENA",dc:"2026-02-11",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:117,data:"2026-01-21",cliente:"906 Dental Team",sede:"Viale delle Rimembranze, 45 – 20045 Lainate (MI)",nc:"SI",tipo:"",lavoro:"DOCUMENTAZIONE SICUREZZA",resp:"DE SENA",dc:"2026-02-11",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:118,data:"2026-01-21",cliente:"907 Cacici",sede:"Via Savoca, 30 - 00132 Roma RM",nc:"SI",tipo:"",lavoro:"DOCUMENTAZIONE SICUREZZA",resp:"DE SENA",dc:"2026-02-11",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:119,data:"2026-02-16",cliente:"Clinica Età Evolutiva",sede:"Milano Foro Buonaparte",nc:"SI",tipo:"",lavoro:"REQUISITI SANITARI E SCIA APERTURA",resp:"CINZIA",dc:"2026-02-16",fatt:"",note:"",dfa:"2026-02-16",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:120,data:"2026-02-17",cliente:"IN THERAPY",sede:"Milano Foro Buonaparte",nc:"SI",tipo:"",lavoro:"REQUISITI SANITARI E SCIA APERTURA",resp:"CINZIA",dc:"",fatt:"",note:"",dfa:"2026-02-16",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:121,data:"2026-02-17",cliente:"109 SAN MARTINO SICCOMARIO",sede:"DP DENT SRL",nc:"NO",tipo:"",lavoro:"RELAZIONE LASER + NOMINA ADDETTO SICUREZZA LASER",resp:"CINZIA",dc:"2026-02-17",fatt:"X",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:122,data:"2026-02-17",cliente:"STUDIO DENTISTICO PAOLESCHI VIAREGGIO",sede:"",nc:"",tipo:"",lavoro:"",resp:"",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:123,data:"2026-02-17",cliente:"DP ZERO",sede:"",nc:"",tipo:"",lavoro:"extra medicina oltre 17 dipendenti gestione",resp:"",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""},
-{id:124,data:"2026-02-18",cliente:"DES- AFFIDEA LODI SUD",sede:"LODI",nc:"SI",tipo:"",lavoro:"DVR PROCEDURE NOMINA MC E ATTIVAZIONE SS E RADIOPROTEZIONE",resp:"NICOLE",dc:"",fatt:"",note:"",dfa:"",df:"",cBy:"admin",uBy:"",uAt:""}
-];
 
 function getStato(r) {
   if (!r.data) return "";
@@ -410,11 +274,53 @@ function CheckboxVisto({ checked, date, disabled, onToggle, color }) {
   );
 }
 
+var SUPABASE_URL = "https://afqxzhrjuqmtbnwvjmvb.supabase.co";
+var SUPABASE_KEY = "sb_publishable_sGMqlA04CJx2wIv5YfolCQ_23rGMRUJ";
+
+function sb(table) {
+  return {
+    select: function() {
+      return fetch(SUPABASE_URL + "/rest/v1/" + table + "?select=*&order=id.asc", {
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
+      }).then(function(r) { return r.json(); });
+    },
+    insert: function(data) {
+      return fetch(SUPABASE_URL + "/rest/v1/" + table, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=representation" },
+        body: JSON.stringify(data)
+      }).then(function(r) { return r.json(); });
+    },
+    update: function(id, data) {
+      return fetch(SUPABASE_URL + "/rest/v1/" + table + "?id=eq." + id, {
+        method: "PATCH",
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=representation" },
+        body: JSON.stringify(data)
+      }).then(function(r) { return r.json(); });
+    },
+    del: function(id) {
+      return fetch(SUPABASE_URL + "/rest/v1/" + table + "?id=eq." + id, {
+        method: "DELETE",
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
+      });
+    }
+  };
+}
+
+function dbToRow(r) {
+  return { id:r.id, data:r.data||"", cliente:r.cliente||"", sede:r.sede||"", nc:r.nc||"", tipo:r.tipo||"", lavoro:r.lavoro||"", resp:r.resp||"", dc:r.dc||"", fatt:r.fatt||"", note:r.note||"", dfa:r.dfa||"", df:r.df||"", cBy:r.cby||"", uBy:r.uby||"", uAt:r.uat||"" };
+}
+
+function rowToDb(r) {
+  return { data:r.data||"", cliente:r.cliente||"", sede:r.sede||"", nc:r.nc||"", tipo:r.tipo||"", lavoro:r.lavoro||"", resp:r.resp||"", dc:r.dc||"", fatt:r.fatt||"", note:r.note||"", dfa:r.dfa||"", df:r.df||"", cby:r.cBy||"", uby:r.uBy||"", uat:r.uAt||"" };
+}
+
 export default function App() {
   var [user, setUser] = useState(null);
-  var [rows, setRows] = useState(IMPORTED);
-  var [users, setUsers] = useState(DEFAULT_USERS);
+  var [rows, setRows] = useState([]);
+  var [users, setUsers] = useState({});
   var [logs, setLogs] = useState([]);
+  var [loading, setLoading] = useState(true);
   var [view, setView] = useState("dashboard");
   var [editing, setEditing] = useState(null);
   var [filter, setFilter] = useState("TUTTI");
@@ -425,18 +331,26 @@ export default function App() {
   var [sortCol, setSortCol] = useState("data");
   var [sortDir, setSortDir] = useState("desc");
 
-  useEffect(function(){
-    try {
-      var rd = localStorage.getItem("aq7-rows"); if(rd) setRows(JSON.parse(rd));
-      var ud = localStorage.getItem("aq7-users"); if(ud) setUsers(JSON.parse(ud));
-      var ld = localStorage.getItem("aq7-logs"); if(ld) setLogs(JSON.parse(ld));
-    } catch(e){console.log("init",e);}
-  },[]);
+  function loadAll() {
+    Promise.all([sb("commesse").select(), sb("utenti").select(), sb("logs").select()]).then(function(res) {
+      if (Array.isArray(res[0])) setRows(res[0].map(dbToRow));
+      if (Array.isArray(res[1])) {
+        var uObj = {};
+        res[1].forEach(function(u) { uObj[u.username] = { password: u.password, nome: u.nome, ruolo: u.ruolo }; });
+        setUsers(uObj);
+      }
+      if (Array.isArray(res[2])) setLogs(res[2].map(function(l) { return { when: l["when"], who: l.who, action: l.action, detail: l.detail }; }));
+      setLoading(false);
+    }).catch(function(e) { console.log("load error", e); setLoading(false); });
+  }
 
-  var persist = useCallback(function(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}},[]);
-  function saveRows(nr){setRows(nr);persist("aq7-rows",nr);}
-  function saveUsers(nu){setUsers(nu);persist("aq7-users",nu);}
-  function addLog(who,action,detail){setLogs(function(prev){var nl=prev.concat([{when:timeNow(),who:who,action:action,detail:detail}]);persist("aq7-logs",nl);return nl;});}
+  useEffect(function() { loadAll(); }, []);
+
+  function addLog(who, action, detail) {
+    var entry = { "when": timeNow(), who: who, action: action, detail: detail || "" };
+    setLogs(function(prev) { return prev.concat([entry]); });
+    sb("logs").insert(entry);
+  }
 
   var stats = useMemo(function(){
     var f=rows.filter(function(r){return r.data;});
@@ -477,8 +391,18 @@ export default function App() {
   }
 
   function doSave(form){
-    if(form.id){form.uBy=user.nome;form.uAt=timeNow();saveRows(rows.map(function(r){return r.id===form.id?form:r;}));addLog(user.nome,"MODIFICATO",form.cliente);}
-    else{form.id=Date.now();form.cBy=user.nome;saveRows(rows.concat([form]));addLog(user.nome,"CREATO",form.cliente);}
+    if(form.id){
+      form.uBy=user.nome;form.uAt=timeNow();
+      sb("commesse").update(form.id, rowToDb(form)).then(function(){ loadAll(); });
+      setRows(rows.map(function(r){return r.id===form.id?form:r;}));
+      addLog(user.nome,"MODIFICATO",form.cliente);
+    } else {
+      var dbData = rowToDb(form); dbData.cby = user.nome;
+      sb("commesse").insert(dbData).then(function(res){
+        if(Array.isArray(res)&&res[0]) { loadAll(); }
+      });
+      addLog(user.nome,"CREATO",form.cliente);
+    }
     setEditing(null);
   }
   function doDelete(id){
@@ -488,31 +412,54 @@ export default function App() {
   }
   function confirmDelete(){
     if(!confirmDel) return;
-    var newRows=rows.filter(function(x){return x.id!==confirmDel.id;});
-    saveRows(newRows);
+    sb("commesse").del(confirmDel.id).then(function(){ loadAll(); });
+    setRows(rows.filter(function(x){return x.id!==confirmDel.id;}));
     addLog(user.nome,"ELIMINATO",confirmDel.cliente);
     setConfirmDel(null);
   }
   function toggleAnticipo(r){
     var newVal=r.dfa?"":todayStr();
     var updated=Object.assign({},r,{dfa:newVal,uBy:user.nome,uAt:timeNow()});
-    saveRows(rows.map(function(x){return x.id===r.id?updated:x;}));
+    sb("commesse").update(r.id, rowToDb(updated)).then(function(){ loadAll(); });
+    setRows(rows.map(function(x){return x.id===r.id?updated:x;}));
     addLog(user.nome,newVal?"VISTO ANTICIPO":"RIMOSSO ANTICIPO",r.cliente);
   }
   function toggleSaldo(r){
     var newVal=r.df?"":todayStr();
     var updated=Object.assign({},r,{df:newVal,uBy:user.nome,uAt:timeNow()});
-    saveRows(rows.map(function(x){return x.id===r.id?updated:x;}));
+    sb("commesse").update(r.id, rowToDb(updated)).then(function(){ loadAll(); });
+    setRows(rows.map(function(x){return x.id===r.id?updated:x;}));
     addLog(user.nome,newVal?"VISTO SALDO":"RIMOSSO SALDO",r.cliente);
   }
   function toggleCompleto(r){
     var newVal=r.dc?"":todayStr();
     var updated=Object.assign({},r,{dc:newVal,uBy:user.nome,uAt:timeNow()});
-    saveRows(rows.map(function(x){return x.id===r.id?updated:x;}));
+    sb("commesse").update(r.id, rowToDb(updated)).then(function(){ loadAll(); });
+    setRows(rows.map(function(x){return x.id===r.id?updated:x;}));
     addLog(user.nome,newVal?"COMPLETATO":"RIMOSSO COMPLETAMENTO",r.cliente);
+  }
+  function saveUsers(nu){
+    setUsers(nu);
+    var promises = Object.entries(nu).map(function(e) {
+      return sb("utenti").update(e[0], { password: e[1].password, nome: e[1].nome, ruolo: e[1].ruolo }).then(function(){}).catch(function(){
+        return sb("utenti").insert({ username: e[0], password: e[1].password, nome: e[1].nome, ruolo: e[1].ruolo });
+      });
+    });
+    Promise.all(promises).then(function(){ loadAll(); });
   }
   function sendEmail(row){var stato=getStato(row);var subj=encodeURIComponent("[FATT] "+stato+" - "+row.cliente);var body="Cliente: "+row.cliente+"\nSede: "+row.sede+"\nLavoro: "+row.lavoro+"\nResp: "+row.resp+"\nStato: "+stato+(row.note?"\nNote: "+row.note:"")+"\n\nCordiali saluti";window.open("mailto:amministrazione@aqsitalia.it?subject="+subj+"&body="+encodeURIComponent(body));}
   function exportCSV(){var h=["Data","Cliente","Sede","Contratto","Tipologia","Lavoro","Resp","Completamento","Fatturabile","Note","Anticipo","Fattura","Stato","Creato","Modificato"];var csv=[h.join(";")];filtered.forEach(function(r){csv.push([fDate(r.data),r.cliente,r.sede,r.nc,r.tipo||"",(r.lavoro||"").replace(/;/g,","),r.resp,fDate(r.dc),r.fatt,(r.note||"").replace(/;/g,","),fDate(r.dfa),fDate(r.df),getStato(r),r.cBy||"",r.uBy||""].join(";"));});var blob=new Blob(["\ufeff"+csv.join("\n")],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="commesse_aqs.csv";a.click();}
+
+  if(loading) return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0A1628,#1F4E79,#2E75B6)",fontFamily:"system-ui,sans-serif"}}>
+      <div style={{textAlign:"center",color:"white"}}>
+        <div style={{width:64,height:64,background:"rgba(255,255,255,0.12)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
+        <div style={{fontSize:16,fontWeight:700}}>Caricamento...</div>
+      </div>
+    </div>
+  );
 
   if(!user) return <LoginPage users={users} onLogin={function(u){setUser(u);addLog(u.nome,"LOGIN","Accesso");}}/>;
 
