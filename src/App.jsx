@@ -123,7 +123,7 @@ function ConfirmModal({ message, onConfirm, onCancel }) {
   );
 }
 
-function EditForm({ row, onSave, onClose, isAdmin, users }) {
+function EditForm({ row, onSave, onClose, isAdmin, users, allRows }) {
   var _r = Object.assign({}, row);
   if (!_r.tipo) _r.tipo = "";
   var [f, setF] = useState(_r);
@@ -132,6 +132,8 @@ function EditForm({ row, onSave, onClose, isAdmin, users }) {
   var lbl = {fontSize:10,fontWeight:700,color:"#6B7280",marginBottom:3,display:"block",textTransform:"uppercase"};
   var resps = [];
   Object.values(users).forEach(function(u){if(u.ruolo==="dipendente"&&resps.indexOf(u.nome)===-1)resps.push(u.nome);});
+  if(allRows) allRows.forEach(function(r){if(r.resp&&resps.indexOf(r.resp)===-1)resps.push(r.resp);});
+  if(row && row.resp && resps.indexOf(row.resp)===-1) resps.push(row.resp);
   return (
     <Modal onClose={onClose}>
       <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:800,color:"#1F4E79"}}>{row.id?"Modifica":"Nuova Attivita"}</h2>
@@ -141,7 +143,7 @@ function EditForm({ row, onSave, onClose, isAdmin, users }) {
         <div style={{gridColumn:"1/-1"}}><label style={lbl}>Ragione Sociale completa</label><input value={f.cliente} onChange={function(e){set("cliente",e.target.value);}} placeholder="Nome cliente..." style={inp}/></div>
         <div><label style={lbl}>Sede</label><input value={f.sede} onChange={function(e){set("sede",e.target.value);}} style={inp}/></div>
         <div><label style={lbl}>Tipologia Attivita</label><select value={f.tipo||""} onChange={function(e){set("tipo",e.target.value);}} style={inp}><option value="">-- Seleziona --</option>{TIPOLOGIE.map(function(t){return <option key={t} value={t}>{t}</option>;})}</select></div>
-        <div><label style={lbl}>Responsabile</label><select value={f.resp} onChange={function(e){set("resp",e.target.value);}} style={inp}><option value="">--</option>{resps.map(function(r){return <option key={r}>{r}</option>;})}</select></div>
+        <div><label style={lbl}>Responsabile</label><input list="resp-list" value={f.resp} onChange={function(e){set("resp",e.target.value.toUpperCase());}} placeholder="Seleziona o scrivi nome..." style={inp}/><datalist id="resp-list">{resps.map(function(r){return <option key={r} value={r}/>;})}</datalist></div>
         <div style={{gridColumn:"1/-1"}}><label style={lbl}>Lavoro da svolgere</label><textarea value={f.lavoro} onChange={function(e){set("lavoro",e.target.value);}} rows={2} style={Object.assign({},inp,{resize:"vertical"})}/></div>
         <div><label style={lbl}>Data completamento</label><input type="date" value={f.dc} onChange={function(e){set("dc",e.target.value);}} style={inp}/></div>
         <div style={{gridColumn:"1/-1"}}><label style={lbl}>Note</label><textarea value={f.note} onChange={function(e){set("note",e.target.value);}} rows={2} style={Object.assign({},inp,{resize:"vertical"})}/></div>
@@ -748,7 +750,7 @@ export default function App() {
     </div>}
 
     </div>
-    {editing&&<EditForm row={editing} onSave={doSave} onClose={function(){setEditing(null);}} isAdmin={isAdmin} users={users}/>}
+    {editing&&<EditForm row={editing} onSave={doSave} onClose={function(){setEditing(null);}} isAdmin={isAdmin} users={users} allRows={rows}/>}
     {showSettings&&<AdminSettings users={users} onSaveUsers={saveUsers} logs={logs} onClose={function(){setShowSettings(false);}}/>}
     {showLegenda&&<LegendaModal onClose={function(){setShowLegenda(false);}}/>}
     {confirmDel&&<ConfirmModal message={"Eliminare l'attivita per "+confirmDel.cliente+"?"} onConfirm={confirmDelete} onCancel={function(){setConfirmDel(null);}}/>}
