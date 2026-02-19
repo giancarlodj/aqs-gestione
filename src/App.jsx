@@ -345,7 +345,11 @@ export default function App() {
     }).catch(function(e) { console.log("load error", e); setLoading(false); });
   }
 
-  useEffect(function() { loadAll(); }, []);
+  useEffect(function() {
+    loadAll();
+    var interval = setInterval(function() { loadAll(); }, 30000);
+    return function() { clearInterval(interval); };
+  }, []);
 
   function addLog(who, action, detail) {
     var entry = { "when": timeNow(), who: who, action: action, detail: detail || "" };
