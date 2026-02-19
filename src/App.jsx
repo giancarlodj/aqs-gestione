@@ -279,8 +279,9 @@ var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 
 function sb(table) {
   return {
-    select: function() {
-      return fetch(SUPABASE_URL + "/rest/v1/" + table + "?select=*&order=id.asc", {
+    select: function(orderCol) {
+      var ord = orderCol ? "&order=" + orderCol + ".asc" : "";
+      return fetch(SUPABASE_URL + "/rest/v1/" + table + "?select=*" + ord, {
         headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
       }).then(function(r) { return r.json(); });
     },
@@ -332,7 +333,7 @@ export default function App() {
   var [sortDir, setSortDir] = useState("desc");
 
   function loadAll() {
-    Promise.all([sb("commesse").select(), sb("utenti").select(), sb("logs").select()]).then(function(res) {
+    Promise.all([sb("commesse").select("id"), sb("utenti").select(), sb("logs").select("id")]).then(function(res) {
       if (Array.isArray(res[0])) setRows(res[0].map(dbToRow));
       if (Array.isArray(res[1])) {
         var uObj = {};
@@ -441,8 +442,14 @@ export default function App() {
   function saveUsers(nu){
     setUsers(nu);
     var promises = Object.entries(nu).map(function(e) {
-      return sb("utenti").update(e[0], { password: e[1].password, nome: e[1].nome, ruolo: e[1].ruolo }).then(function(){}).catch(function(){
-        return sb("utenti").insert({ username: e[0], password: e[1].password, nome: e[1].nome, ruolo: e[1].ruolo });
+      return fetch(SUPABASE_URL + "/rest/v1/utenti?username=eq." + encodeURIComponent(e[0]), {
+        method: "PATCH",
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=representation" },
+        body: JSON.stringify({ password: e[1].password, nome: e[1].nome, ruolo: e[1].ruolo })
+      }).then(function(r) { return r.json(); }).then(function(res) {
+        if (!Array.isArray(res) || res.length === 0) {
+          return sb("utenti").insert({ username: e[0], password: e[1].password, nome: e[1].nome, ruolo: e[1].ruolo });
+        }
       });
     });
     Promise.all(promises).then(function(){ loadAll(); });
