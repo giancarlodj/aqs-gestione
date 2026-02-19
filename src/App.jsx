@@ -275,7 +275,7 @@ function CheckboxVisto({ checked, date, disabled, onToggle, color }) {
 }
 
 var SUPABASE_URL = "https://afqxzhrjuqmtbnwvjmvb.supabase.co";
-var SUPABASE_KEY = "sb_publishable_sGMqlA04CJx2wIv5YfolCQ_23rGMRUJ";
+var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmcXh6aHJqdXFtdGJud3ZqbXZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0OTM3NTYsImV4cCI6MjA4NzA2OTc1Nn0.36AziZSlTxgSXC8ldl0yGpfarLTf9ntI0T_8KozR3ZY";
 
 function sb(table) {
   return {
