@@ -402,7 +402,6 @@ export default function App() {
 
   var filtered = useMemo(function(){
     var r=rows.filter(function(x){return x.data;});
-    if(user&&user.ruolo==="dipendente") r=r.filter(function(x){return x.resp===user.nome;});
     if(filter==="DA FATTURARE") r=r.filter(function(x){return getStato(x)==="DA FATTURARE";});
     else if(filter==="IN ATTESA") r=r.filter(function(x){return getStato(x)==="IN ATTESA";});
     else if(filter==="FATTURATO") r=r.filter(function(x){return getStato(x)==="FATTURATO";});
